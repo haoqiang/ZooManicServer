@@ -1,8 +1,0 @@
-<script src="/socket.io/socket.io.js"></script>
-<script>
-  var socket = io.connect('http://ec2-54-225-24-113.compute-1.amazonaws.com');
-  socket.on('news', function (data) {
-    console.log(data);
-    socket.emit('my other event', { my: 'data' });
-  });
-</script>
