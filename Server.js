@@ -17,6 +17,7 @@ function Server() {
     var gameInterval;       // Interval used for gameLoop      
 
     var zooMap;             // the map object
+    var gameEnd = true;
 
     /*
      * private method: broadcast(msg)
@@ -57,6 +58,53 @@ function Server() {
         if (gameInterval !== undefined) {
             clearInterval(gameInterval);
             gameInterval = undefined;
+            gameEnd = true;
+        }
+    }
+
+    /*
+     * private method: gameLoop()
+     *
+     * The main game loop.  Called every interval at a
+     * period roughly corresponding to the frame rate 
+     * of the game
+     */
+    var gameLoop = function () {
+       if (!gameEnd) {
+            var states = {};
+            states.zooMap = {};
+
+            var count = 0;
+            for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
+                for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
+                    states.zooMap[count] = {};
+                    states.zooMap[count].type = zooMap.cells[x][y].type;
+                    states.zooMap[count].item = zooMap.cells[x][y].item;
+                    states.zooMap[count].explode = zooMap.cells[x][y].explode;
+                    count++;
+                }
+            }        
+            //unicast(sockets[1], states);
+            console.log(states);
+        } else {
+            reset();
+        }
+    }
+
+    /*
+     * private method: startGame()
+     *
+     * Start a new game. Initialize the map and start the game loop
+     */
+    var startGame = function () {
+        if (gameInterval !== undefined) {
+            // There is already a timer running so the game has 
+            // already started.
+            console.log("Already playing!");
+        } else {
+            zooMap = new ZooMap();
+            gameEnd = false;
+            gameInterval = setInterval(function() {gameLoop();}, 1000/Zoo.FRAME_RATE);
         }
     }
 
@@ -71,10 +119,10 @@ function Server() {
             var sockjs = require('sockjs');
             var sock = sockjs.createServer();
 
-    		server.listen(80);
-
             /* Initialize objects */
+            gameInterval = undefined;
             zooMap = new ZooMap();
+            gameLoop();
 
             sock.on('connection', function (conn) {
                 console.log("connected");
@@ -84,17 +132,32 @@ function Server() {
                     reset();
                 });
 
+
                 /* When the client send data to the server */
                 conn.on('data', function (data) {
                     var message = JSON.parse(data);
 
                     switch (message.type) {
+                        case "setName":
+                            break;
+
+                        case "chooseRoom":
+                            break;
+
                         /* A player is ready */
                         case "ready":
+                            manageRoom(room_id);
+                            break;
+
+                        case "start":
+                            startGame();
                             break;
 
                         /* A player moves */
                         case "move":
+                            break;
+
+                        case "plantBomb":
                             break;
 
                         default:
@@ -102,6 +165,12 @@ function Server() {
                     }
                 });
             });
+
+            var app = express();
+            var httpServer = http.createServer(app);
+            sock.installHandlers(httpServer, {prefix:'/zoo'});
+            httpServer.listen(Zoo.PORT, '0.0.0.0');
+            app.use(express.static(__dirname));
         } catch (e) {
             console.log ("Error: " + e);
         }
