@@ -6,175 +6,151 @@ require(LIB_PATH + "Player.js");
 require(LIB_PATH + "Bomb.js");
 require(LIB_PATH + "ZooMap.js");
 require(LIB_PATH + "Cell.js");
+require(LIB_PATH + "Session.js");
 
 function Server() {
+
 	// Declare variables
 	var port = Zoo.PORT;
-    var players;            // Associative array for players, indexed via socket ID
-    var sockets;            // Associative array for players, indexed via socket ID
-    var p1, p2, p3, p4;     // Player 1, 2, 3, 4
-                            
-    var gameInterval;       // Interval used for gameLoop      
+	var maxGameRoomSize = 5;
+	var maxGameRoomNumber = 10;
+	var maxGamePlayer = maxGameRoomSize * maxGameRoomNumber;
 
-    var zooMap;             // the map object
-    var gameEnd = true;
+	var players = {};
+	var sessions = {};
 
-    /*
-     * private method: broadcast(msg)
-     *
-     * broadcast takes in a JSON structure and send it to
-     * all players.
-     *
-     * e.g., broadcast({type: "abc", x: 30});
-     */
-    var broadcast = function (msg) {
-        var id;
-        for (id in sockets) {
-            sockets[id].write(JSON.stringify(msg));
-        }
-    }
+	var broadcast = function (msg) {
+		for (var id in players) {
+			if(players.hasOwnProperty(id)){
+				players[id].socket.write(JSON.stringify(msg));
+			}
+		}
+	};
 
-    /*
-     * private method: unicast(socket, msg)
-     *
-     * unicast takes in a socket and a JSON structure 
-     * and send the message through the given socket.
-     *
-     * e.g., unicast(socket, {type: "abc", x: 30});
-     */
-    var unicast = function (socket, msg) {
-        socket.write(JSON.stringify(msg));
-    }    
+	var unicast = function (socket, msg) {
+		socket.write(JSON.stringify(msg));
+	};
 
-    /*
-     * private method: reset()
-     *
-     * Reset the game to its initial state.  Clean up
-     * any remaining timers.  Usually called when the
-     * connection of a player is closed.
-     */
-    var reset = function () {
-        // Clears gameInterval and set it to undefined
-        if (gameInterval !== undefined) {
-            clearInterval(gameInterval);
-            gameInterval = undefined;
-            gameEnd = true;
-        }
-    }
+	//
+	//  return the session list to
+	//      show on the game lobby
+	//
+	var getSessionStats = function () {
+		var result = [];
+		for (var key in sessions) {
+			if (sessions.hasOwnProperty(key)) {
+				result.push(sessions[key].getState());
+			}
+		}
+		return result;
+	}
 
-    /*
-     * private method: gameLoop()
-     *
-     * The main game loop.  Called every interval at a
-     * period roughly corresponding to the frame rate 
-     * of the game
-     */
-    var gameLoop = function () {
-       if (!gameEnd) {
-            var states = {};
-            states.zooMap = {};
+	this.start = function () {
+		// init all instances, so that players can see
+		for (var i = 0; i < maxGameRoomNumber; i++) {
+			sessions["10000" + i] = new Session("10000" + i);
+		}
 
-            var count = 0;
-            for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
-                for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
-                    states.zooMap[count] = {};
-                    states.zooMap[count].type = zooMap.cells[x][y].type;
-                    states.zooMap[count].item = zooMap.cells[x][y].item;
-                    states.zooMap[count].explode = zooMap.cells[x][y].explode;
-                    count++;
-                }
-            }        
-            //unicast(sockets[1], states);
-            console.log(states);
-        } else {
-            reset();
-        }
-    }
+		// set event handler for socket messages
+		try {
+			var express = require('express');
+			var http = require('http');
+			var sockjs = require('sockjs');
+			var sock = sockjs.createServer();
+			var playerCount = 0;
 
-    /*
-     * private method: startGame()
-     *
-     * Start a new game. Initialize the map and start the game loop
-     */
-    var startGame = function () {
-        if (gameInterval !== undefined) {
-            // There is already a timer running so the game has 
-            // already started.
-            console.log("Already playing!");
-        } else {
-            zooMap = new ZooMap();
-            gameEnd = false;
-            gameInterval = setInterval(function() {gameLoop();}, 1000/Zoo.FRAME_RATE);
-        }
-    }
+			// new connection established
+			sock.on('connection', function (conn) {
 
-    this.start = function () {
-        try {
-    		// var app = require('express')()
-    		//   , server = require('http').createServer(app)
-    		//   , io = require('socket.io').listen(server);
+				if (playerCount === maxGamePlayer) {
+					//
+					// force disconnect the player.
+					unicast(conn, {type: "message", content: "The game is full."});
+					conn.disconnect();
+				} else {
+					//
+					// create new player and send session list
+					//     a unique id is set to each player
+					players[conn.id] = new Player(new Date().getTime(), conn);
+					playerCount++;
+				}
 
-            var express = require('express');
-            var http = require('http');
-            var sockjs = require('sockjs');
-            var sock = sockjs.createServer();
+				console.log("New player connected... (total " + playerCount + ")");
+				broadcast({type: "message", content: "There are now " + playerCount + " players"});
 
-            /* Initialize objects */
-            gameInterval = undefined;
-            zooMap = new ZooMap();
-            gameLoop();
-
-            sock.on('connection', function (conn) {
-                console.log("connected");
-
-                /* When the client close the connection */
-                conn.on('close', function () {
-                    reset();
-                });
+				/* When the client close the connection */
+				conn.on('close', function () {
+					//
+					// remove the player if
+					//      it joined any session
+					var sid = players[conn.id].sessionId;
+					if (sid !== undefined) {
+						sessions[sid].removePlayer(players[conn.id]);
+					}
+					playerCount--;
+				});
 
 
-                /* When the client send data to the server */
-                conn.on('data', function (data) {
-                    var message = JSON.parse(data);
+				/* When the client send data to the server */
+				conn.on('data', function (data) {
+					var message = JSON.parse(data);
+					console.log("   Recieve:\n" + JSON.stringify(message, null, 2));
+					switch (message.type) {
+						case "setProperty":
+							//
+							// map all properties to user
+							//
+							var properties = message.properties;
+							for (var key in properties) {
+								if (properties.hasOwnProperty(key)) {
+									players[conn.id][key] = properties[key];
+								}
+							}
+							unicast(conn, {type: "message", content: "New properties set."});
+							break;
+						case "selectSession":
+							//
+							//  add new player to session
+							//
+							var sessionId = message.sessionId;
+							console.log(JSON.stringify(sessions, null, 2));
+							if (sessions[sessionId] !== undefined) {
+								if (sessions[sessionId].getRoomSize() < maxGameRoomSize) {
+									sessions[sessionId].addPlayer(players[conn.id]);
+									unicast(conn, {type: "message", content: "New player added."});
+								} else {
+									unicast(conn, {type: "message", content: "The room is full."});
+								}
+							} else {
+								unicast(conn, {type: "message", content: "Session not exist."});
+							}
+							break;
+						case "getSession":
+							unicast(conn, {type: "session", content: getSessionStats()});
+							break;
+						default:
+							//
+							// if user belongs to a session, pass the message
+							//   to that session to handle
+							//
+							if (players[conn.id].sessionId !== undefined) {
+								sessions[players[conn.id].sessionId].digest(players[conn.id], message);
+							} else {
+								console.log("Unhandled message." );
+							}
+					}
+				});
+			});
 
-                    switch (message.type) {
-                        case "setName":
-                            break;
-
-                        case "chooseRoom":
-                            break;
-
-                        /* A player is ready */
-                        case "ready":
-                            manageRoom(room_id);
-                            break;
-
-                        case "start":
-                            startGame();
-                            break;
-
-                        /* A player moves */
-                        case "move":
-                            break;
-
-                        case "plantBomb":
-                            break;
-
-                        default:
-                            console.log ("Unhandled " + message.type);
-                    }
-                });
-            });
-
-            var app = express();
-            var httpServer = http.createServer(app);
-            sock.installHandlers(httpServer, {prefix:'/zoo'});
-            httpServer.listen(Zoo.PORT, '0.0.0.0');
-            app.use(express.static(__dirname));
-        } catch (e) {
-            console.log ("Error: " + e);
-        }
-    }
+			var app = express();
+			var httpServer = http.createServer(app);
+			sock.installHandlers(httpServer, {prefix: '/zoo'});
+			httpServer.listen(Zoo.PORT, '0.0.0.0');
+			app.use(express.static(__dirname));
+		} catch (e) {
+			console.log("Error: " + e);
+		}
+	}
 }
 
 var gameServer = new Server();

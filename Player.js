@@ -1,26 +1,23 @@
 "use strict";
 
-function Player (sid, pid, xPos, yPos) {
-	/* Public variables */
-	this.sid;
-	this.pid;
-	this.xPos;
-	this.yPos;
+function Player(id, socket) {
 
-	this.avatarId;
 
-	this.isAlive;
-	this.speed;
-	this.haste;
-	this.invulnerable;
-	this.disguise;
-	this.bombLeft;
+	//
+	//	Constructor
+	//
+	this.id = id;
+	this.name = "unset";
+	this.socket = socket;
+	this.sessionId;
 
-	/* Constructor */
-	this.sid = sid;
-	this.pid = pid;
-	this.xPos = xPos;
-	this.yPos = yPos;
+
+
+	//
+	//	Init when game start
+	//
+//	this.xPos = xPos;
+//	this.yPos = yPos;
 
 	this.isAlive = true;
 	this.speed = 5;			// default player speed
@@ -31,6 +28,13 @@ function Player (sid, pid, xPos, yPos) {
 
 	this.avatarId = 0;
 
+	this.getState = function () {
+		return {
+			id      : this.id,
+			name    : this.name,
+			avatarId: this.avatarId
+		}
+	}
 }
 
 global.Player = Player;
