@@ -87,7 +87,7 @@ setTimeout(function(){
 
 	// try start
 	test.sendToServer({type:"start"});
-	test.sendToServer({type:"move", x: 5, y: 5});
-	test.sendToServer({type:"plantBomb", x: 5, y: 5});
+	//test.sendToServer({type:"move", x: 5, y: 5});
+	//test.sendToServer({type:"plantBomb", x: 5, y: 5});
 
 }, 1500);

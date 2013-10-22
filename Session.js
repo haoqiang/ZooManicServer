@@ -90,7 +90,7 @@ function Session(sid) {
             // put players position inside the message
             states.players = {};
             for (var i = 0; i < players.length; i++) {
-                states.players[players[i].id] = {x: players[i].x, y: players[i].y};
+                states.players[players[i].id] = {x: players[i].x, y: players[i].y, bombLeft: players[i].bombLeft};
             }
 
             // put the map inside the message

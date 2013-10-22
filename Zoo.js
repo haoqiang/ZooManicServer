@@ -1,8 +1,8 @@
 var Zoo = {
 	TREE_PERCENTAGE : 50,	// percentage of trees in the map
 	ITEM_PERCENTAGE : 50,	// percentage of items over the tree
-	ZOO_WIDTH : 10,			// number of horizontal cells
-	ZOO_HEIGHT : 10,		// number of vertical cells
+	ZOO_WIDTH : 28,			// number of horizontal cells
+	ZOO_HEIGHT : 28,		// number of vertical cells
 	CELL_WIDTH : 30,		// width of a cell in px
 	CELL_HEIGHT : 30,		// height of a cell in px
 	FRAME_RATE : 25,		// frame rate of the game
