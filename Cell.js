@@ -4,7 +4,7 @@ function Cell (xPos, yPos, type, item) {
 	/* Public variables */
 	this.x;
 	this.y;
-	this.type;		// empty - 0, tree - 1, rock - 2
+	this.type;		// empty - 0, box - 1, rock - 2
 	this.item;		// no item - 0, 1 - bomb range, 2 - haste, 3 - invunerable, 4 - more bombs, 5 - shakable
 	this.explode;	// if the cell is exploding by a bomb
 

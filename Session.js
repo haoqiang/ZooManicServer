@@ -66,6 +66,7 @@ function Session(sid) {
 	var gameLoop = function () {
 		if (!gameEnd) {
 			var states = {};
+            states["type"] = "update";
 
             // update the bombs on the map
             states.bombs = {};
