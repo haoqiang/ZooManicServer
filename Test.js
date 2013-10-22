@@ -88,6 +88,6 @@ setTimeout(function(){
 	// try start
 	test.sendToServer({type:"start"});
 	//test.sendToServer({type:"move"});
-	test.sendToServer({type:"plantBomb", x: 0, y: 0});
+	//test.sendToServer({type:"plantBomb", x: 0, y: 0});
 
 }, 500);
