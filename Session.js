@@ -74,15 +74,15 @@ function Session(sid) {
             states.bombs.exploded = [];
             states.bombs.active = [];
             for (var i = 0; i < bombs.length; i++) {
-                console.log(bombs[i]);
                 if (bombs[i].isExploded()) {
+                    console.log(bombs[i]);
                     // increase the bombLeft of the player
-                    for (var i = 0; i < players.length; i++) {
-                        if (players[i].id == bombs[i].playerId)
-                            players[i].bombLeft++;
-                    }
+                    // for (var i = 0; i < players.length; i++) {
+                    //     if (players[i].id == bombs[i].playerId)
+                    //         players[i].bombLeft++;
+                    // }
 
-         
+                    
                     bombExplode(bombs[i]);
                     states.bombs.exploded.push({x: bombs[i].x, y: bombs[i].y});
                     // remove the bomb from the array
@@ -95,7 +95,7 @@ function Session(sid) {
             // put players position inside the message
             states.players = {};
             for (var i = 0; i < players.length; i++) {
-                states.players[players[i].id] = {x: players[i].x, y: players[i].y};
+                states.players[players[i].id] = {x: players[i].x, y: players[i].y, bombLeft: players[i].bombLeft};
             }
 
             // put the map inside the message
@@ -114,14 +114,13 @@ function Session(sid) {
 	};
 
     var plantBomb = function (player, x, y) {
-        var newBomb = new Bomb(player.avatarId, player.id. x, y);
-        console.log(newBomb);
+        var newBomb = new Bomb(player.avatarId, player.id, x, y);
         bombs.push(newBomb);
         player.bombLeft--;
     }
 
     var bombExplode = function (bomb) {
-        console.log(bomb);
+        //console.log(bomb);
         var up = false, down = false, left = false, right = false;
 
         for (var i = 1; i <= bomb.range; i++) {
@@ -179,6 +178,7 @@ function Session(sid) {
 	this.digest = function (player, msg) {
 		switch (msg.type) {
 			case "ready":
+                unicast(player, {type:"getPlayerId", content: player.id});
 				break;
 
 			case "start":

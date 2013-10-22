@@ -14,18 +14,21 @@ function Bomb(type, playerId, xPos, yPos) {
 	/* Constructor */
 	var that = this;
 	this.type = type;
+	this.x = xPos;
+	this.y = yPos;
 	this.playerId = playerId;
 	this.range = 3;
 	this.isShakable = false;
 	this.timer = new Date().getTime();
-	this.x = xPos;
-	this.y = yPos;
+
 
 	this.isExploded = function () {
 		var now = new Date().getTime();
 
 		if (now - this.timer >= 3000)
 			return true;
+		else
+			return false;
 	}
 
 	// the following snippet defines an appropriate high resolution 
