@@ -98,7 +98,8 @@ function Session(sid) {
             var count = 0;
             for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
                 for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
-                    states.zooMap[x+" "+y] = { type: zooMap.cells[x][y].type, item: zooMap.cells[x][y].item };
+                    states.zooMap[count] = { type: zooMap.cells[x][y].type, 
+                        item: zooMap.cells[x][y].item, x: x, y: y};
                     count ++;
                 }
             }
