@@ -76,17 +76,12 @@ function Session(sid) {
             for (var i = 0; i < bombs.length; i++) {
                 if (bombs[i].isExploded()) {
                     console.log(bombs[i]);
-                    // increase the bombLeft of the player
-                    // for (var i = 0; i < players.length; i++) {
-                    //     if (players[i].id == bombs[i].playerId)
-                    //         players[i].bombLeft++;
-                    // }
-
-                    
+  
                     bombExplode(bombs[i]);
                     states.bombs.exploded.push({x: bombs[i].x, y: bombs[i].y});
                     // remove the bomb from the array
-                    bombs.splice[i, 1];
+                    bombs.splice(i, 1);
+                    //console.log(bombs[i]);
                 } else {
                     states.bombs.active.push({x: bombs[i].x, y: bombs[i].y});
                 }
@@ -95,7 +90,7 @@ function Session(sid) {
             // put players position inside the message
             states.players = {};
             for (var i = 0; i < players.length; i++) {
-                states.players[players[i].id] = {x: players[i].x, y: players[i].y, bombLeft: players[i].bombLeft};
+                states.players[players[i].id] = {x: players[i].x, y: players[i].y};
             }
 
             // put the map inside the message
@@ -145,6 +140,12 @@ function Session(sid) {
                 zooMap.cells[bomb.x+i][bomb.y].type = 0;
             }
         }
+
+        // increase the bombLeft of the player
+        for (var i = 0; i < players.length; i++) {
+            if (players[i].id == bombs[i].playerId)
+                players[i].bombLeft++;
+        }
     }
 
 	/*
@@ -164,8 +165,6 @@ function Session(sid) {
             for (var i = 0; i < players.length; i++) {
                 players[i].x = startPoint[i].x;
                 players[i].y = startPoint[i].y;
-                console.log(startPoint[i]);
-                console.log(players[i]);
             }
 
 			gameEnd = false;
