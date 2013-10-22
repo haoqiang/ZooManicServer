@@ -16,8 +16,8 @@ function Player(id, socket) {
 	//
 	//	Init when game start
 	//
-//	this.xPos = xPos;
-//	this.yPos = yPos;
+	this.x;
+	this.y;
 
 	this.isAlive = true;
 	this.speed = 5;			// default player speed

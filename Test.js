@@ -27,6 +27,7 @@ function TestClient() {
 	var initNetwork = function () {
 		// Attempts to connect to game server
 		try {
+			console.log("http://" + Zoo.SERVER_NAME + ":" + Zoo.PORT + "/zoo");
 			socket = new SockJS("http://" + Zoo.SERVER_NAME + ":" + Zoo.PORT + "/zoo");
 			socket.onmessage = function (e) {
 				var message = JSON.parse(e.data);
@@ -67,7 +68,6 @@ function TestClient() {
 
 		// Initialize network and GUI
 		initNetwork();
-
 	}
 }
 
@@ -87,5 +87,7 @@ setTimeout(function(){
 
 	// try start
 	test.sendToServer({type:"start"});
-	test.sendToServer({type:"move"});
+	//test.sendToServer({type:"move"});
+	test.sendToServer({type:"plantBomb", x: 0, y: 0});
+
 }, 500);

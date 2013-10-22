@@ -1,6 +1,6 @@
 "use strict";
 
-function Bomb(type, playerId) {
+function Bomb(type, playerId, xPos, yPos) {
 
 	/* Public variables */
 	this.type;
@@ -8,6 +8,8 @@ function Bomb(type, playerId) {
 	this.playerId;		// which player own this bomb?
 	this.isShakable;	// for detonation
 	this.timer;			// timer in ms
+	this.x;
+	this.y;
 
 	/* Constructor */
 	var that = this;
@@ -15,8 +17,34 @@ function Bomb(type, playerId) {
 	this.playerId = playerId;
 	this.range = 3;
 	this.isShakable = false;
-	this.timer = 3000;
+	this.timer = new Date().getTime();
+	this.x = xPos;
+	this.y = yPos;
 
+	this.isExploded = function () {
+		var now = new Date().getTime();
+
+		if (now - this.timer >= 3000)
+			return true;
+	}
+
+	// the following snippet defines an appropriate high resolution 
+	// getTimestamp function depends on platform.
+	if (typeof window === "undefined") {
+		console.log("using process.hrtime()");
+		var getTimestamp = function() { var t = process.hrtime(); return t[0]*1e3 + t[1]*1.0/1e6} 
+	} else if (window.performance !== undefined) {
+        if (window.performance.now) {
+            console.log("using window.performence.now()");
+            var getTimestamp = function() { return window.performance.now(); };
+        } else if (window.performance.webkitNow) {
+            console.log("using window.performence.webkitNow()");
+            var getTimestamp = function() { return window.performance.webkitNow(); };
+        }
+	} else {
+		console.log("using Date.now();");
+		var getTimestamp = function() { return new Date().now(); };
+	}
 }
 
 /* For nodejs require */
