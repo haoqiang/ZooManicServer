@@ -106,7 +106,7 @@ function Server() {
 									players[conn.id][key] = properties[key];
 								}
 							}
-							unicast(conn, {type: "message", status: 0, content: players.getState()});
+							unicast(conn, {type: "setPropertyReply", status: 0});
 							break;
 						case "setSession":
 							//
