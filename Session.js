@@ -14,7 +14,7 @@ function Session(sid) {
 	var zooMap;             // the map object
 	var gameEnd = true;
 
-    var startPoint = [{ x: 0, y: 0 },  {x: Zoo.ZOO_WIDTH-1, y: 0}, 
+    var startPoint = [{ x: 0, y: 0 },  {x: Zoo.ZOO_WIDTH-1, y: 0},
         {x: 0, y: Zoo.ZOO_HEIGHT-1}, {x: Zoo.ZOO_WIDTH-1, y: Zoo.ZOO_HEIGHT-1}];
 
 	/*
@@ -76,7 +76,7 @@ function Session(sid) {
             for (var i = 0; i < bombs.length; i++) {
                 if (bombs[i].isExploded()) {
                     console.log(bombs[i]);
-  
+
                     bombExplode(bombs[i]);
                     states.bombs.exploded.push({x: bombs[i].x, y: bombs[i].y});
                     // remove the bomb from the array
@@ -98,7 +98,7 @@ function Session(sid) {
             var count = 0;
             for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
                 for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
-                    states.zooMap[count] = { type: zooMap.cells[x][y].type, 
+                    states.zooMap[count] = { type: zooMap.cells[x][y].type,
                         item: zooMap.cells[x][y].item, x: x, y: y};
                     count ++;
                 }
@@ -151,11 +151,11 @@ function Session(sid) {
 
     var selectAvatar = function (player, avatarId) {
     	for (var i = 0; i < players.length; i++) {
-    		if (players[i].avatarId == avatarId)
+    		if (players[i].avatarId === avatarId)
     			return false;
     	}
     	player.avatarId = avatarId;
-    	return avatarId;
+    	return true;
     }
 
 	/*
@@ -168,7 +168,7 @@ function Session(sid) {
 			// There is already a timer running so the game has already started.
 			console.log("Session " + that.sid + " is already playing!");
 		} else {
-            // Initialize map 
+            // Initialize map
 			zooMap = new ZooMap();
 
             // Initialize player position
@@ -188,9 +188,14 @@ function Session(sid) {
 		switch (msg.type) {
 			case "ready":
 				var selectedAvatar = selectAvatar(player, msg.avatarId);
-                unicast(player, {type:"getPlayerId", content: {id: player.id, avatarId: selectedAvatar}});
-                if (selectedAvatar)
-                	broadcast({type:"selectedAvatar", content: player.avatarId});
+                if(selectedAvatar){
+                    unicast(player, {type:"readyState", status: 0, content: {id: player.id, avatarId: selectedAvatar}});
+                }else{
+                    unicast(player, {type:"readyState", status: 1});
+                }
+                if (selectedAvatar){
+                    broadcast({type:"selectedAvatar", content: player.avatarId});
+                }
 				break;
 
 			case "start":
@@ -216,7 +221,7 @@ function Session(sid) {
 		}
 	};
 
-	this.getRoomSize = function () {
+	this.getPlayerNumber = function () {
 		return players.length;
 	};
 

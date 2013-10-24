@@ -8,6 +8,7 @@ function Player(id, socket) {
 	//
 	this.id = id;
 	this.name = "unset";
+	this.avatarId = 0;
 	this.socket = socket;
 	this.sessionId;
 
@@ -26,7 +27,6 @@ function Player(id, socket) {
 	this.disguise = 0;
 	this.bombLeft = 3;
 
-	this.avatarId = 0;
 
 	this.getState = function () {
 		return {

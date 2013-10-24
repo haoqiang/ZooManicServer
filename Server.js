@@ -12,7 +12,7 @@ function Server() {
 
 	// Declare variables
 	var port = Zoo.PORT;
-	var maxGameRoomSize = 5;
+	var maxGameRoomSize = 4;
 	var maxGameRoomNumber = 10;
 	var maxGamePlayer = maxGameRoomSize * maxGameRoomNumber;
 
@@ -106,26 +106,28 @@ function Server() {
 									players[conn.id][key] = properties[key];
 								}
 							}
-							unicast(conn, {type: "message", content: "New properties set."});
+							unicast(conn, {type: "message", status: 0, content: players.getState()});
 							break;
-						case "selectSession":
+						case "setSession":
 							//
 							//  add new player to session
 							//
 							var sessionId = message.sessionId;
-							console.log(JSON.stringify(sessions, null, 2));
 							if (sessions[sessionId] !== undefined) {
-								if (sessions[sessionId].getRoomSize() < maxGameRoomSize) {
+								if (sessions[sessionId].getPlayerNumber() < maxGameRoomSize) {
 									sessions[sessionId].addPlayer(players[conn.id]);
-									unicast(conn, {type: "message", content: "New player added."});
+									unicast(conn, {type: "message", status: 0, content: "New player added."});
 								} else {
-									unicast(conn, {type: "message", content: "The room is full."});
+									unicast(conn, {type: "message", status: 1, content: "The room is full."});
 								}
 							} else {
-								unicast(conn, {type: "message", content: "Session not exist."});
+								unicast(conn, {type: "message", status: 2, content: "Session not exist."});
 							}
 							break;
 						case "getSession":
+							unicast(conn, {type: "session", content: players[conn.id].sessionId});
+							break;
+						case "getAllSession":
 							unicast(conn, {type: "session", content: getSessionStats()});
 							break;
 						default:
@@ -136,7 +138,7 @@ function Server() {
 							if (players[conn.id].sessionId !== undefined) {
 								sessions[players[conn.id].sessionId].digest(players[conn.id], message);
 							} else {
-								console.log("Unhandled message." );
+								console.log("Unhandled message.");
 							}
 					}
 				});
