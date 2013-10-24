@@ -189,9 +189,9 @@ function Session(sid) {
 			case "ready":
 				var selectedAvatar = selectAvatar(player, msg.avatarId);
                 if(selectedAvatar){
-                    unicast(player, {type:"readyState", status: 0, content: {id: player.id, avatarId: selectedAvatar}});
+                    unicast(player, {type:"readyReply", status: 0, content: {id: player.id, avatarId: selectedAvatar}});
                 }else{
-                    unicast(player, {type:"readyState", status: 1});
+                    unicast(player, {type:"readyReply", status: 1});
                 }
                 if (selectedAvatar){
                     broadcast({type:"selectedAvatar", content: player.avatarId});
