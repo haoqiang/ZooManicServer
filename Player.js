@@ -7,8 +7,8 @@ function Player(id, socket) {
 	//	Constructor
 	//
 	this.id = id;
-	this.name = "unset";
-	this.avatarId = 0;
+	this.name = "new player";
+	this.avatarId = -1;
 	this.socket = socket;
 	this.sessionId;
 
