@@ -177,8 +177,19 @@ function Session(sid) {
                 players[i].y = startPoint[i].y;
             }
 
-			gameEnd = false;
-			console.log("Session " + that.sid + " start playing!");
+
+            var result = [];
+            for (var key in sessions) {
+                if (sessions.hasOwnProperty(key)) {
+                    result.push(sessions[key].getState());
+                    console.log("   Player:\n" + JSON.stringify(sessions[key].getState(), null, 2));
+                }
+            }
+            broadcast({type:"start", content: result});
+
+
+            gameEnd = false;
+            console.log("Session " + that.sid + " start playing!");
 			gameInterval = setInterval(gameLoop, 1000 / Zoo.FRAME_RATE);
 		}
 	};
