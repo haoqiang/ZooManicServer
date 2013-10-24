@@ -77,7 +77,7 @@ test.start();
 
 setTimeout(function(){
 	// first set names
-	test.sendToServer({type:"setProperty", properties:{name: "a", age: 7}});
+	test.sendToServer({type:"setProperty", properties:{name: "a", age: 7, avatarId: 1}});
 	// get game rooms
 	test.sendToServer({type:"getSession"});
 	// join a room

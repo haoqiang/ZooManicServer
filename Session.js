@@ -149,6 +149,15 @@ function Session(sid) {
         }
     }
 
+    var selectAvatar = function (player, avatarId) {
+    	for (var i = 0; i < players.length; i++) {
+    		if (players[i].avatarId == avatarId)
+    			return false;
+    	}
+    	player.avatarId = avatarId;
+    	return avatarId;
+    }
+
 	/*
 	 * private method: startGame()
 	 *
@@ -178,7 +187,10 @@ function Session(sid) {
 	this.digest = function (player, msg) {
 		switch (msg.type) {
 			case "ready":
-                unicast(player, {type:"getPlayerId", content: player.id});
+				var selectedAvatar = selectAvatar(player, msg.avatarId);
+                unicast(player, {type:"getPlayerId", content: {id: player.id, avatarId: selectedAvatar}});
+                if (selectedAvatar)
+                	broadcast({type:"selectedAvatar", content: player.avatarId});
 				break;
 
 			case "start":
