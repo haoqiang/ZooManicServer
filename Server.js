@@ -149,6 +149,7 @@ function Server() {
 			sock.installHandlers(httpServer, {prefix: '/zoo'});
 			httpServer.listen(Zoo.PORT, '0.0.0.0');
 			app.use(express.static(__dirname));
+			console.log('Listening to 0.0.0.0:'+Zoo.PORT);
 		} catch (e) {
 			console.log("Error: " + e);
 		}
