@@ -178,14 +178,8 @@ function Session(sid) {
             }
 
 
-            var result = [];
-            for (var key in sessions) {
-                if (sessions.hasOwnProperty(key)) {
-                    result.push(sessions[key].getState());
-                    console.log("   Player:\n" + JSON.stringify(sessions[key].getState(), null, 2));
-                }
-            }
-            broadcast({type:"start", content: result});
+            console.log("Session state:\n" + JSON.stringify(that.getState(), null, 2))
+            broadcast({type:"start", content: that.getState().players});
 
 
             gameEnd = false;
