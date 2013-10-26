@@ -32,6 +32,8 @@ function Player(id, socket) {
 		return {
 			id      : this.id,
 			name    : this.name,
+			x		: this.x,
+			y		: this.y,
 			avatarId: this.avatarId
 		}
 	}
