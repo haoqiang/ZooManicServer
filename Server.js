@@ -22,13 +22,16 @@ function Server() {
 	var broadcast = function (msg) {
 		for (var id in players) {
 			if(players.hasOwnProperty(id)){
-				players[id].socket.write(JSON.stringify(msg));
+				//players[id].socket.write(JSON.stringify(msg));
+				players[id].socket.emit('data',msg);
 			}
 		}
 	};
 
 	var unicast = function (socket, msg) {
-		socket.write(JSON.stringify(msg));
+		//socket.write(JSON.stringify(msg));
+		socket.emit('data',msg);
+		console.log(msg);
 	};
 
 	//
@@ -55,9 +58,8 @@ function Server() {
 		try {
 			var playerCount = 0;
 
-			var net = require('net');
-			var server = net.createServer(function (conn)
-			{ //'connection' listener
+			var io = require('socket.io').listen(5000);
+			io.sockets.on('connection', function (conn) {
 			    console.log('Client connected to this nodeServer');
 
 				if (playerCount === maxGamePlayer) {
@@ -126,26 +128,100 @@ function Server() {
 								console.log("Unhandled message.");
 							}
 					}  
-			    });
-
-			    conn.on('end', function ()
-			    {
-			        console.log('client disconnected');
-					//
-					// remove the player if
-					//      it joined any session
-					var sid = players[conn.id].sessionId;
-					if (sid !== undefined) {
-						sessions[sid].removePlayer(players[conn.id]);
-					}
-					playerCount--;
-			    });
+				});
 			});
 
-			server.listen(Zoo.PORT, function ()
-			{ //'listening' listener
-			    console.log('nodeServer listening port: ' + Zoo.PORT);
-			});
+			// var net = require('net');
+			// var server = net.createServer(function (conn)
+			// { //'connection' listener
+			//     console.log('Client connected to this nodeServer');
+
+			// 	if (playerCount === maxGamePlayer) {
+			// 		//
+			// 		// force disconnect the player.
+			// 		unicast(conn, {type: "message", content: "The game is full."});
+			// 		conn.disconnect();
+			// 	} else {
+			// 		//
+			// 		// create new player and send session list
+			// 		//     a unique id is set to each player
+			// 		players[conn.id] = new Player(new Date().getTime(), conn);
+			// 		playerCount++;
+			// 	}
+
+			// 	console.log("New player connected... (total " + playerCount + ")");
+
+			//     conn.on('data', function (data)
+			//     {
+			// 		var message = JSON.parse(data.toString('utf-8'));
+			// 		//console.log(data.toString('utf-8'));
+			// 		console.log("   Recieve:\n" + JSON.stringify(message, null, 2));
+			// 		switch (message.type) {
+			// 			case "setProperty":
+			// 				//
+			// 				// map all properties to user
+			// 				//
+			// 				var properties = message.properties;
+			// 				for (var key in properties) {
+			// 					if (properties.hasOwnProperty(key)) {
+			// 						players[conn.id][key] = properties[key];
+			// 					}
+			// 				}
+			// 				unicast(conn, {type: "setPropertyReply", status: 0});
+			// 				break;
+			// 			case "setSession":
+			// 				//
+			// 				//  add new player to session
+			// 				//
+			// 				var sessionId = message.sessionId;
+			// 				if (sessions[sessionId] !== undefined) {
+			// 					if (sessions[sessionId].getPlayerNumber() < maxGameRoomSize) {
+			// 						sessions[sessionId].addPlayer(players[conn.id]);
+			// 						unicast(conn, {type: "message", status: 0, content: "New player added."});
+			// 					} else {
+			// 						unicast(conn, {type: "message", status: 1, content: "The room is full."});
+			// 					}
+			// 				} else {
+			// 					unicast(conn, {type: "message", status: 2, content: "Session not exist."});
+			// 				}
+			// 				break;
+			// 			case "getSession":
+			// 				unicast(conn, {type: "session", content: players[conn.id].sessionId});
+			// 				break;
+			// 			case "getAllSession":
+			// 				unicast(conn, {type: "session", content: getSessionStats()});
+			// 				break;
+			// 			default:
+			// 				//
+			// 				// if user belongs to a session, pass the message
+			// 				//   to that session to handle
+			// 				//
+			// 				if (players[conn.id].sessionId !== undefined) {
+			// 					sessions[players[conn.id].sessionId].digest(players[conn.id], message);
+			// 				} else {
+			// 					console.log("Unhandled message.");
+			// 				}
+			// 		}  
+			//     });
+
+			//     conn.on('end', function ()
+			//     {
+			//         console.log('client disconnected');
+			// 		//
+			// 		// remove the player if
+			// 		//      it joined any session
+			// 		var sid = players[conn.id].sessionId;
+			// 		if (sid !== undefined) {
+			// 			sessions[sid].removePlayer(players[conn.id]);
+			// 		}
+			// 		playerCount--;
+			//     });
+			// });
+
+			// server.listen(Zoo.PORT, function ()
+			// { //'listening' listener
+			//     console.log('nodeServer listening port: ' + Zoo.PORT);
+			// });
 			// var express = require('express');
 			// var http = require('http');
 			// var sockjs = require('sockjs');

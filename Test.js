@@ -14,8 +14,8 @@ function TestClient() {
 	 */
 	this.sendToServer = function (msg) {
 		document.getElementById("output").innerHTML += "<hr>outgoing:<br><pre>"+JSON.stringify(msg, null, 4)+"</pre>";
-		socket.send(JSON.stringify(msg));
-
+		//socket.send(JSON.stringify(msg));
+		socket.emit('data',JSON.stringify(msg));
 	}
 
 	/*
@@ -29,31 +29,31 @@ function TestClient() {
 		try {
 			console.log("http://" + Zoo.SERVER_NAME + ":" + Zoo.PORT);
 			//socket = new SockJS("http://" + Zoo.SERVER_NAME + ":" + Zoo.PORT + "/zoo");
-			var io = require('socket.io');
-			console.log(io);
-			socket = require('socket.io').connect('http://localhost:5000');
-			// socket.onmessage = function (e) {
-			// 	var message = JSON.parse(e.data);
+			socket = io.connect('http://localhost:5000');
+			//socket.onmessage = function (e) {
+			socket.on('data', function (e) {
+				//var message = JSON.parse(e.data);
+				var message = e;
 
 
-			// 	document.getElementById("output").innerHTML += "<hr>incoming:<br><pre>"+JSON.stringify(message, null, 4)+"</pre>";
+				document.getElementById("output").innerHTML += "<hr>incoming:<br><pre>"+JSON.stringify(message, null, 4)+"</pre>";
 
-			// 	// switch (message.type) {
-			// 	// case "message":
-			// 	//     appendMessage("serverMsg", message.content);
-			// 	//     break;
-			// 	// case "update":
-			// 	//     ball.x = message.ballX;
-			// 	//     ball.y = message.ballY;
-			// 	//     myPaddle.x = message.myPaddleX;
-			// 	//     myPaddle.y = message.myPaddleY;
-			// 	//     opponentPaddle.x = message.opponentPaddleX;
-			// 	//     opponentPaddle.y = message.opponentPaddleY;
-			// 	//     break;
-			// 	// default:
-			// 	//     appendMessage("serverMsg", "unhandled message type " + message.type);
-			// 	//}
-			// }
+				// switch (message.type) {
+				// case "message":
+				//     appendMessage("serverMsg", message.content);
+				//     break;
+				// case "update":
+				//     ball.x = message.ballX;
+				//     ball.y = message.ballY;
+				//     myPaddle.x = message.myPaddleX;
+				//     myPaddle.y = message.myPaddleY;
+				//     opponentPaddle.x = message.opponentPaddleX;
+				//     opponentPaddle.y = message.opponentPaddleY;
+				//     break;
+				// default:
+				//     appendMessage("serverMsg", "unhandled message type " + message.type);
+				//}
+			});
 		} catch (e) {
 			console.log("Failed to connect");
 		}
@@ -82,14 +82,14 @@ setTimeout(function(){
 	// first set names
 	test.sendToServer({type:"setProperty", properties:{name: "a", age: 7, avatarId: 1}});
 	// get game rooms
-	test.sendToServer({type:"getSession"});
+	test.sendToServer({type:"getAllSession"});
 	// join a room
-	test.sendToServer({type:"selectSession", sessionId:"100000"});
+	test.sendToServer({type:"setSession", sessionId:"100000"});
 	// see the changes
-	test.sendToServer({type:"getSession"});
+	test.sendToServer({type:"getAllSession"});
 
 	// try start
-	test.sendToServer({type:"start"});
+	//test.sendToServer({type:"start"});
 	//test.sendToServer({type:"move", x: 5, y: 5});
 	//test.sendToServer({type:"plantBomb", x: 5, y: 5});
 

@@ -25,7 +25,8 @@ function Session(sid) {
 	 */
 	var broadcast = function (msg) {
 		for (var i = 0; i < players.length; i++) {
-			players[i].socket.write(JSON.stringify(msg));
+			//players[i].socket.write(JSON.stringify(msg));
+            players[i].socket.emit('data',msg);
 		}
 	};
 
@@ -36,7 +37,8 @@ function Session(sid) {
 	 * e.g., unicast(socket, {type: "abc", x: 30});
 	 */
 	var unicast = function (player, msg) {
-		player.socket.write(JSON.stringify(msg));
+		//player.socket.write(JSON.stringify(msg));
+        player.socket.emit('data',msg);
 	};
 
 	/*
@@ -77,10 +79,10 @@ function Session(sid) {
                 if (bombs[i].isExploded()) {
                     console.log(bombs[i]);
 
-                    bombExplode(bombs[i]);
+                    bombExplode(bombs[i], i);
                     states.bombs.exploded.push({x: bombs[i].x, y: bombs[i].y});
                     // remove the bomb from the array
-                    bombs.splice(i, 1);
+                    //bombs.splice(i, 1);
                     //console.log(bombs[i]);
                 } else {
                     states.bombs.active.push({x: bombs[i].x, y: bombs[i].y});
@@ -90,7 +92,12 @@ function Session(sid) {
             // put players position inside the message
             states.players = {};
             for (var i = 0; i < players.length; i++) {
-                states.players[players[i].id] = {x: players[i].x, y: players[i].y, bombLeft: players[i].bombLeft};
+                states.players[players[i].id] = {
+                	x: players[i].x, 
+                	y: players[i].y, 
+                	bombLeft: players[i].bombLeft,
+                	isAlive: players[i].isAlive
+                };
             }
             //states.players = that.getState().players;
 
@@ -114,32 +121,53 @@ function Session(sid) {
         var newBomb = new Bomb(player.avatarId, player.id, x, y);
         bombs.push(newBomb);
         player.bombLeft--;
+
+        // Update the cell to record that the bomb is there
+        zooMap.cells[x][y].hasBomb = true;
     }
 
-    var bombExplode = function (bomb) {
+    var bombExplode = function (bomb, bombIdx) {
+    	// Update the cell that has the bomb that the bomb exploded
+    	zooMap.cells[bomb.x][bomb.y].hasBomb = false;
+
+    	// Remove the bomb from the bombs array
+    	bombs.splice(i, 1);
+
         //console.log(bomb);
-        var up = false, down = false, left = false, right = false;
+        var up = true, down = true, left = true, right = true;
 
         for (var i = 1; i <= bomb.range; i++) {
             // if bomb explode upward
-            if (up && zooMap.cells[bomb.x][bomb.y+i].type == 1) {
-                up = true;
+            if (up && zooMap.cells[bomb.x][bomb.y+i].length != 0 && zooMap.cells[bomb.x][bomb.y+i].type != 2) {
                 zooMap.cells[bomb.x][bomb.y+i].type = 0;
+                explodeOtherBomb(bomb.x, bomb.y+i);
+                killPlayer(bomb.x, bomb.y+i);
+            } else {
+            	up = false;
             }
 
-            if (down && zooMap.cells[bomb.x][bomb.y-i].type == 1) {
-                down = true;
+            if (down && zooMap.cells[bomb.x][bomb.y-i].length != 0 && zooMap.cells[bomb.x][bomb.y-i].type != 2) {
                 zooMap.cells[bomb.x][bomb.y-i].type = 0;
+                explodeOtherBomb(bomb.x, bomb.y-i);
+                killPlayer(bomb.x, bomb.y-i);
+            } else {
+            	down = false;
             }
 
-            if (up && zooMap.cells[bomb.x-i][bomb.y].type == 1) {
-                left = true;
+            if (left && zooMap.cells[bomb.x-i][bomb.y].length != 0 && zooMap.cells[bomb.x-i][bomb.y].type != 2) {
                 zooMap.cells[bomb.x-i][bomb.y].type = 0;
+                explodeOtherBomb(bomb.x-i, bomb.y);
+                killPlayer(bomb.x-i, bomb.y);
+            } else {
+            	left = false;
             }
 
-            if (up && zooMap.cells[bomb.x+i][bomb.y].type == 1) {
-                right = true;
+            if (right && zooMap.cells[bomb.x+i][bomb.y].length != 0 && zooMap.cells[bomb.x+i][bomb.y].type != 2) {
                 zooMap.cells[bomb.x+i][bomb.y].type = 0;
+                explodeOtherBomb(bomb.x+i, bomb.y);
+                killPlayer(bomb.x+i, bomb.y);
+            } else {
+            	right = false;
             }
         }
 
@@ -148,6 +176,44 @@ function Session(sid) {
             if (players[i].id == bombs[i].playerId)
                 players[i].bombLeft++;
         }
+    }
+
+    // Explode the bomb at x, y if there is any
+    var explodeOtherBomb = function (x, y) {
+    	if (zooMap.cells[x][y].hasBomb == false)
+    		return;
+
+    	for (var i = 0; i < bombs.length; i++) {
+    		if (bombs[i].x == x && bombs[i].y == y)
+    			bombExplode(bombs[i], i);
+    	}
+    }
+
+    // Kill any the player if he/she at the position x, y
+    var killPlayer = function (x, y) {
+        for (var i = 0; i < players.length; i++) {
+            if ((players[i].x > x-0.5 || players[i].x < x+0.5) && (players[i].y > y-0.5 || players[i].y < y+0.5))
+                players[i].isAlive = false;
+        }    	
+    }
+
+    // Check if the player get item the the new position
+    var getItem = function (player, x, y) {
+    	if (zooMap.cells[x][y].item != 0) {
+    		var item = zooMap.cells[x][y].item;
+    		player.items[item]++;
+    		zooMap.cells[x][y].item = 0;
+
+    		switch(item) {
+    			case 2: 	//haste
+    				player.speed+= 5;
+    				break;
+
+    			case 4: 	//more bomb
+    				player.bombLeft++;
+    				break;
+    		}
+    	}
     }
 
     var selectAvatar = function (player, avatarId) {
@@ -215,11 +281,16 @@ function Session(sid) {
 				//console.log("move: " + msg);
                 player.x = msg.x;
                 player.y = msg.y;
+                getItem(player, Math.round(msg.x), Math.round(msg.y));
 				break;
 
 			case "plantBomb":
-                plantBomb(player, msg.x, msg.y);
+                plantBomb(player, Math.round(msg.x), Math.round(msg.y));
 				//console.log("plantBomb: " + msg);
+				break;
+
+			case "useItem":
+				useItem(player);
 				break;
 
 			default:

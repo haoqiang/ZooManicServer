@@ -1,5 +1,8 @@
-require("http").createServer(function(request, response){
-      response.writeHeader(200, {"Content-Type": "text/plain"});  
-        response.write("Hello World!");  
-          response.end();
-}).listen(8080);
+var io = require('socket.io').listen(5000);
+
+io.sockets.on('connection', function (socket) {
+  socket.emit('news', { hello: 'world' });
+  socket.on('my other event', function (data) {
+    console.log(data);
+  });
+});
