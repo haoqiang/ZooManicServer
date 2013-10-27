@@ -27,30 +27,33 @@ function TestClient() {
 	var initNetwork = function () {
 		// Attempts to connect to game server
 		try {
-			console.log("http://" + Zoo.SERVER_NAME + ":" + Zoo.PORT + "/zoo");
-			socket = new SockJS("http://" + Zoo.SERVER_NAME + ":" + Zoo.PORT + "/zoo");
-			socket.onmessage = function (e) {
-				var message = JSON.parse(e.data);
+			console.log("http://" + Zoo.SERVER_NAME + ":" + Zoo.PORT);
+			//socket = new SockJS("http://" + Zoo.SERVER_NAME + ":" + Zoo.PORT + "/zoo");
+			var io = require('socket.io');
+			console.log(io);
+			socket = require('socket.io').connect('http://localhost:5000');
+			// socket.onmessage = function (e) {
+			// 	var message = JSON.parse(e.data);
 
 
-				document.getElementById("output").innerHTML += "<hr>incoming:<br><pre>"+JSON.stringify(message, null, 4)+"</pre>";
+			// 	document.getElementById("output").innerHTML += "<hr>incoming:<br><pre>"+JSON.stringify(message, null, 4)+"</pre>";
 
-				// switch (message.type) {
-				// case "message":
-				//     appendMessage("serverMsg", message.content);
-				//     break;
-				// case "update":
-				//     ball.x = message.ballX;
-				//     ball.y = message.ballY;
-				//     myPaddle.x = message.myPaddleX;
-				//     myPaddle.y = message.myPaddleY;
-				//     opponentPaddle.x = message.opponentPaddleX;
-				//     opponentPaddle.y = message.opponentPaddleY;
-				//     break;
-				// default:
-				//     appendMessage("serverMsg", "unhandled message type " + message.type);
-				//}
-			}
+			// 	// switch (message.type) {
+			// 	// case "message":
+			// 	//     appendMessage("serverMsg", message.content);
+			// 	//     break;
+			// 	// case "update":
+			// 	//     ball.x = message.ballX;
+			// 	//     ball.y = message.ballY;
+			// 	//     myPaddle.x = message.myPaddleX;
+			// 	//     myPaddle.y = message.myPaddleY;
+			// 	//     opponentPaddle.x = message.opponentPaddleX;
+			// 	//     opponentPaddle.y = message.opponentPaddleY;
+			// 	//     break;
+			// 	// default:
+			// 	//     appendMessage("serverMsg", "unhandled message type " + message.type);
+			// 	//}
+			// }
 		} catch (e) {
 			console.log("Failed to connect");
 		}
