@@ -32,8 +32,8 @@ function TestClient() {
 			socket = io.connect('http://localhost:5000');
 			//socket.onmessage = function (e) {
 			socket.on('data', function (e) {
-				//var message = JSON.parse(e.data);
-				var message = e;
+				var message = JSON.parse(e);
+				//var message = e;
 
 
 				document.getElementById("output").innerHTML += "<hr>incoming:<br><pre>"+JSON.stringify(message, null, 4)+"</pre>";

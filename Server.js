@@ -23,14 +23,14 @@ function Server() {
 		for (var id in players) {
 			if(players.hasOwnProperty(id)){
 				//players[id].socket.write(JSON.stringify(msg));
-				players[id].socket.emit('data',msg);
+				players[id].socket.emit('data',JSON.stringify(msg));
 			}
 		}
 	};
 
 	var unicast = function (socket, msg) {
 		//socket.write(JSON.stringify(msg));
-		socket.emit('data',msg);
+		socket.emit('data',JSON.stringify(msg));
 		console.log(msg);
 	};
 
