@@ -13,23 +13,20 @@ function Server() {
 	// Declare variables
 	var port = Zoo.PORT;
 	var maxGameRoomSize = 4;
-	var maxGameRoomNumber = 10;
-	var maxGamePlayer = maxGameRoomSize * maxGameRoomNumber;
+	var maxGameRoomNumber = 7;
 
-	var players = {};
-	var sessions = {};
+	var players = {}; // Player List
+	var sessions = {}; // Game room
 
 	var broadcast = function (msg) {
 		for (var id in players) {
 			if(players.hasOwnProperty(id)){
-				//players[id].socket.write(JSON.stringify(msg)+"\r\n");
 				players[id].socket.write(JSON.stringify(msg));
 			}
 		}
 	};
 
 	var unicast = function (socket, msg) {
-		//console.log("Sending to client: "+JSON.stringify(msg)+"\r\n");
 		socket.write(JSON.stringify(msg));
 	};
 
@@ -47,6 +44,7 @@ function Server() {
 		return result;
 	}
 
+
 	this.start = function () {
 		// init all instances, so that players can see
 		for (var i = 0; i < maxGameRoomNumber; i++) {
@@ -56,151 +54,59 @@ function Server() {
 		// set event handler for socket messages
 		try {
 			var playerCount = 0;
-
-			/*var net = require('net');
-			var server = net.createServer(function (conn)
-			{ //'connection' listener
-			    console.log('Client connected to this nodeServer');
-
-				if (playerCount === maxGamePlayer) {
-					//
-					// force disconnect the player.
-					unicast(conn, {type: "message", content: "The game is full."});
-					conn.disconnect();
-				} else {
-					//
-					// create new player and send session list
-					//     a unique id is set to each player
-					players[conn.id] = new Player(new Date().getTime(), conn);
-					playerCount++;
-				}
-
-				console.log("New player connected... (total " + playerCount + ")");
-
-			    conn.on('data', function (data)
-			    {
-					var message = JSON.parse(data.toString('utf-8'));
-					//console.log(data.toString('utf-8'));
-					console.log("   Recieve:\n" + JSON.stringify(message, null, 2));
-					switch (message.type) {
-						case "setProperty":
-							//
-							// map all properties to user
-							//
-							var properties = message.properties;
-							for (var key in properties) {
-								if (properties.hasOwnProperty(key)) {
-									players[conn.id][key] = properties[key];
-								}
-							}
-							unicast(conn, {type: "setPropertyReply", status: 0});
-							break;
-						case "setSession":
-							//
-							//  add new player to session
-							//
-							var sessionId = message.sessionId;
-							if (sessions[sessionId] !== undefined) {
-								if (sessions[sessionId].getPlayerNumber() < maxGameRoomSize) {
-									sessions[sessionId].addPlayer(players[conn.id]);
-									unicast(conn, {type: "message", status: 0, content: "New player added."});
-								} else {
-									unicast(conn, {type: "message", status: 1, content: "The room is full."});
-								}
-							} else {
-								unicast(conn, {type: "message", status: 2, content: "Session not exist."});
-							}
-							break;
-						case "getSession":
-							unicast(conn, {type: "session", content: players[conn.id].sessionId});
-							break;
-						case "getAllSession":
-							unicast(conn, {type: "session", content: getSessionStats()});
-							break;
-						default:
-							//
-							// if user belongs to a session, pass the message
-							//   to that session to handle
-							//
-							if (players[conn.id].sessionId !== undefined) {
-								sessions[players[conn.id].sessionId].digest(players[conn.id], message);
-							} else {
-								console.log("Unhandled message.");
-							}
-					}  
-			    });
-
-			    conn.on('end', function ()
-			    {
-			        console.log('client disconnected');
-					//
-					// remove the player if
-					//      it joined any session
-					var sid = players[conn.id].sessionId;
-					if (sid !== undefined) {
-						sessions[sid].removePlayer(players[conn.id]);
-					}
-					playerCount--;
-			    });
-			});
-
-			server.listen(Zoo.PORT, function ()
-			{ //'listening' listener
-			    console.log('nodeServer listening port: ' + Zoo.PORT);
-			});*/
-			
-			
 			var express = require('express');
 			var http = require('http');
 			var sockjs = require('sockjs');
 			var sock = sockjs.createServer();
-
-			//var sock = require('socket.io').listen(Zoo.PORT);
 
 			var playerCount = 0;
 			var reconnect = true;
 
 			//new connection established
 			sock.on('connection', function (conn) {
-				if (playerCount === maxGamePlayer) {
-					//
-					//force disconnect the player.
-					unicast(conn, {type: "message", content: "The game is full."});
-					conn.disconnect();
-				} else {
-					//
-					//create new player and send session list
-					 //   a unique id is set to each player
-					players[conn.id] = new Player(new Date().getTime(), conn);
-					playerCount++;
-				}
 
-				console.log("New player connected... (total " + playerCount + ")");
-				broadcast({type: "message", content: "There are now " + playerCount + " players"});
 
 				/* When the client close the connection */
 				conn.on('close', function () {
-					//
-					//remove the player if
-					//     it joined any session
-					/*var sid = players[conn.id].sessionId;
-					if (sid !== undefined) {
-						sessions[sid].removePlayer(players[conn.id]);
-					}
-					playerCount--;*/
-					
-					if (reconnect){
-						console.log("Client, is disconnected!. We need to re-connect");
-						console.log("We need to create a new connection");
-					}
+					// we don't care if player get disconnected!
+					console.log("" + conn.id + " disconnected!");
 				});
 
 
 				/* When the client send data to the server */
 				conn.on('data', function (data) {
 					var message = JSON.parse(data);
+					var playerId = message.playerId;
+					//
+					//	check new incoming connection player id
+					//
+					if(message.type!=="newPlayer"){
+						if(playerId === undefined || players[playerId] === undefined){
+							unicast(conn, {type: "message", status: 1, content: "PlayerId not exist, please apply for new user again."});
+							return;
+						} else {
+							if(players[playerId].socket !== conn){
+								players[playerId].socket = conn;
+								console.log("    Player: " + players[playerId].name + "[" + playerId + "] updated connection.");
+							}
+						}
+					}
 					//console.log("   Recieve:\n" + JSON.stringify(message, null, 2));
 					switch (message.type) {
+						case "newPlayer":
+							//
+							//	called at the very begining of each gameplay, we may remove the user when game finish
+							//
+							playerId = new Date().getTime();
+							var playerName = message.playerName;
+							players[playerId] = new Player(playerId, playerName, conn);
+							console.log("    Player: " + playerName + "[" + playerId + "] created.");
+							//	return player id
+							unicast(conn, {type: "newPlayerReply", status: 0, playerId: playerId});
+							playerCount++;
+							//	update total player count
+							broadcast({type: "totalPlayerCount", totalPlayer: playerCount});
+							break;
 						case "setProperty":
 							//
 							//map all properties to user
@@ -208,19 +114,19 @@ function Server() {
 							var properties = message.properties;
 							for (var key in properties) {
 								if (properties.hasOwnProperty(key)) {
-									players[conn.id][key] = properties[key];
+									players[playerId][key] = properties[key];
 								}
 							}
 							unicast(conn, {type: "setPropertyReply", status: 0});
 							break;
 						case "setSession":
 							//
-							 //add new player to session
+							//add new player to session
 							//
 							var sessionId = message.sessionId;
 							if (sessions[sessionId] !== undefined) {
 								if (sessions[sessionId].getPlayerNumber() < maxGameRoomSize) {
-									sessions[sessionId].addPlayer(players[conn.id]);
+									sessions[sessionId].addPlayer(players[playerId]);
 									unicast(conn, {type: "message", status: 0, content: "New player added."});
 								} else {
 									unicast(conn, {type: "message", status: 1, content: "The room is full."});
@@ -230,7 +136,7 @@ function Server() {
 							}
 							break;
 						case "getSession":
-							unicast(conn, {type: "session", content: players[conn.id].sessionId});
+							unicast(conn, {type: "session", content: players[playerId].sessionId});
 							break;
 						case "getAllSession":
 							unicast(conn, {type: "session", content: getSessionStats()});
@@ -243,8 +149,8 @@ function Server() {
 							//if user belongs to a session, pass the message
 							 // to that session to handle
 							//
-							if (players[conn.id].sessionId !== undefined) {
-								sessions[players[conn.id].sessionId].digest(players[conn.id], message);
+							if (players[playerId].sessionId !== undefined) {
+								sessions[players[playerId].sessionId].digest(players[playerId], message);
 							} else {
 								console.log("Unhandled message." + message.type);
 							}
@@ -254,7 +160,14 @@ function Server() {
 
 			var app = express();
 			var httpServer = http.createServer(app);
-			sock.installHandlers(httpServer);
+            sock.installHandlers(httpServer, {
+            	log: function(severity, message){
+	            	if(severity==="error"){
+	            		console.log("Sever eroor: " + message);
+	            	}
+	            },
+	            disconnect_delay: 600000
+	        });
 			httpServer.listen(Zoo.PORT, '0.0.0.0');
 			app.use(express.static(__dirname));
 			console.log('Listening to 0.0.0.0:'+Zoo.PORT);

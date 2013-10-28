@@ -8,8 +8,8 @@ var Zoo = {
 	FRAME_RATE : 25,		// frame rate of the game
 	PORT : 5000,
 	SERVER_IP: '54.225.24.113',
-    SERVER_NAME : "localhost"
-    //SERVER_NAME : "ec2-54-225-24-113.compute-1.amazonaws.com"
+    //SERVER_NAME : "localhost"
+    SERVER_NAME : "ec2-54-225-24-113.compute-1.amazonaws.com"
 }
 
 /* For nodejs requirement */

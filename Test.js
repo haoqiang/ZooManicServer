@@ -3,6 +3,7 @@
 function TestClient() {
 	// private variables
 	var socket;         // socket used to connect to server
+	var playerId;
 
 
 	/*
@@ -13,9 +14,11 @@ function TestClient() {
 	 * a string.
 	 */
 	this.sendToServer = function (msg) {
+		if(playerId!==undefined){
+			msg.playerId = playerId;
+		}
 		document.getElementById("output").innerHTML += "<hr>outgoing:<br><pre>"+JSON.stringify(msg, null, 4)+"</pre>";
-		//socket.send(JSON.stringify(msg));
-		socket.emit('data',JSON.stringify(msg));
+		socket.send(JSON.stringify(msg));
 	}
 
 	/*
@@ -24,39 +27,30 @@ function TestClient() {
 	 * Connects to the server and initialize the various
 	 * callbacks.
 	 */
-	var initNetwork = function () {
+	this.initNetwork = function () {
 		// Attempts to connect to game server
 		try {
-			console.log("http://" + "ec2-54-225-24-113.compute-1.amazonaws.com" + ":" + Zoo.PORT);
-			//socket = new SockJS("http://" + Zoo.SERVER_NAME + ":" + Zoo.PORT + "/zoo");
-			socket = io.connect('http://localhost:5000');
-			//socket.onmessage = function (e) {
-			socket.on('data', function (e) {
-				var message = JSON.parse(e);
-				//var message = e;
+			socket = new SockJS("http://" + Zoo.SERVER_NAME + ":" + Zoo.PORT + "");
+			//socket = new SockJS("http://localhost:" + Zoo.PORT + "");
+			socket.onmessage = function (e) {
+				var message = JSON.parse(e.data);
 
+				if(message.type!=="update"){
+					document.getElementById("output").innerHTML += "<hr>incoming:<br><pre>"+JSON.stringify(message, null, 4)+"</pre>";
+				}
+				if(message.type==="newPlayerReply"){
+					playerId = message.playerId;
+				}
 
-				document.getElementById("output").innerHTML += "<hr>incoming:<br><pre>"+JSON.stringify(message, null, 4)+"</pre>";
-
-				// switch (message.type) {
-				// case "message":
-				//     appendMessage("serverMsg", message.content);
-				//     break;
-				// case "update":
-				//     ball.x = message.ballX;
-				//     ball.y = message.ballY;
-				//     myPaddle.x = message.myPaddleX;
-				//     myPaddle.y = message.myPaddleY;
-				//     opponentPaddle.x = message.opponentPaddleX;
-				//     opponentPaddle.y = message.opponentPaddleY;
-				//     break;
-				// default:
-				//     appendMessage("serverMsg", "unhandled message type " + message.type);
-				//}
-			});
+			};
 		} catch (e) {
 			console.log("Failed to connect");
 		}
+	}
+
+	this.disconnectNetwork = function () {
+		// Attempts to connect to game server
+		socket.close();
 	}
 
 
@@ -70,7 +64,7 @@ function TestClient() {
 	this.start = function () {
 
 		// Initialize network and GUI
-		initNetwork();
+		this.initNetwork();
 	}
 }
 
@@ -78,19 +72,61 @@ function TestClient() {
 var test = new TestClient();
 test.start();
 
+
+var delay = 1500;
+var interval = 500;
+
+
 setTimeout(function(){
-	// first set names
-	// test.sendToServer({type:"setProperty", properties:{name: "a", age: 7, avatarId: 1}});
-	// // get game rooms
-	// test.sendToServer({type:"getAllSession"});
-	// // join a room
-	// test.sendToServer({type:"setSession", sessionId:"100000"});
-	// // see the changes
-	// test.sendToServer({type:"getAllSession"});
+	document.getElementById("output").innerHTML += "<p><b>Step 1: Request server to create new player</b></p>";
+	test.sendToServer({type:"newPlayer", playerName: "test player"});
+}, delay);
+delay += interval;
+setTimeout(function(){
+	document.getElementById("output").innerHTML += "<p><b>Step 2: Get all available game rooms</b></p>";
+	test.sendToServer({type:"getAllSession"});
+}, delay);
+delay += interval;
+setTimeout(function(){
+	document.getElementById("output").innerHTML += "<p><b>Step 3: Join a game rooms</b></p>";
+	test.sendToServer({type:"setSession", sessionId:"100000"});
+}, delay);
+delay += interval;
+setTimeout(function(){
+	document.getElementById("output").innerHTML += "<p><b>Step 4: Start the game</b></p>";
+	test.sendToServer({type:"start"});
+}, delay);
+delay += interval;
+setTimeout(function(){
+	document.getElementById("output").innerHTML += "<p><b>Step 5: Make some move</b></p>";
+	test.sendToServer({type:"move", x: 5, y: 5});
+}, delay);
+delay += interval;
+setTimeout(function(){
+	document.getElementById("output").innerHTML += "<p><b>Step 6: Try disconnect</b></p><hr>";
+	test.disconnectNetwork();
+}, delay);
+delay += interval;
+setTimeout(function(){
+	document.getElementById("output").innerHTML += "<p><b>Step 8: Try reconnect</b></p><hr>";
+	test.initNetwork();
+}, delay);
+delay += interval;
+setTimeout(function(){
+	document.getElementById("output").innerHTML += "<p><b>Step 9: Try make some move</b></p>";
+	test.sendToServer({type:"move", x: 51, y: 51});
+}, delay);
+delay += interval;
+setTimeout(function(){
+	document.getElementById("output").innerHTML += "<p><b>Step 9: Try make some move again</b></p>";
+	test.sendToServer({type:"move", x: 51, y: 51});
+}, delay);
+delay += interval;
 
-	// try start
-	//test.sendToServer({type:"start"});
-	//test.sendToServer({type:"move", x: 5, y: 5});
-	//test.sendToServer({type:"plantBomb", x: 5, y: 5});
 
-}, 1500);
+
+
+
+
+
+

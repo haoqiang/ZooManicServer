@@ -30,7 +30,6 @@ function Session(sid) {
 		//	count --;
 		//}
 		for (var i = 0; i < players.length; i++) {
-			//players[i].socket.write(JSON.stringify(msg)+"\r\n");
 			players[i].socket.write(JSON.stringify(msg));
 		}
 	};
@@ -42,8 +41,7 @@ function Session(sid) {
 	 * e.g., unicast(socket, {type: "abc", x: 30});
 	 */
 	var unicast = function (player, msg) {
-		console.log("Unicast to client: "+JSON.stringify(msg)+"\r\n");
-		player.socket.write(JSON.stringify(msg)+"\r\n");
+		player.socket.write(JSON.stringify(msg));
 	};
 
 	/*
@@ -115,7 +113,7 @@ function Session(sid) {
 			//if(counter_debug == 1){
 			//	console.log("Broadcast to client: "+JSON.stringify(states)+"\r\n");
 			//}
-			
+
             broadcast(states);
 		} else {
 			reset();
@@ -223,7 +221,7 @@ function Session(sid) {
 				break;
 
 			case "move":
-				//unicast(player, {type:"message", content:"user call move"});
+				unicast(player, {type:"message", content:"user call move"});
 				//console.log("move: " + msg);
                 player.x = msg.x;
                 player.y = msg.y;
@@ -249,7 +247,7 @@ function Session(sid) {
 	this.addPlayer = function (newPlayer) {
 		newPlayer.sessionId = this.sid;
 		players.push(newPlayer);
-		console.log("   Session " + that.sid + " add new player.");
+		console.log("    Session " + that.sid + " add new player.");
 	};
 
 	this.removePlayer = function (oldPlayer) {
@@ -259,7 +257,7 @@ function Session(sid) {
 				break;
 			}
 		}
-		console.log("   Session " + that.sid + " remove one player.");
+		console.log("    Session " + that.sid + " remove one player.");
 	};
 
 	// return current states
