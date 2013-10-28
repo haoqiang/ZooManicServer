@@ -13,6 +13,7 @@ function Session(sid) {
 	var gameInterval;       // Interval used for gameLoop
 	var zooMap;             // the map object
 	var gameEnd = true;
+	var counter_debug = 0;
 
     var startPoint = [{ x: 0, y: 0 },  {x: Zoo.ZOO_WIDTH-1, y: 0},
         {x: 0, y: Zoo.ZOO_HEIGHT-1}, {x: Zoo.ZOO_WIDTH-1, y: Zoo.ZOO_HEIGHT-1}];
@@ -24,7 +25,12 @@ function Session(sid) {
 	 * e.g., broadcast({type: "abc", x: 30});
 	 */
 	var broadcast = function (msg) {
+		//if (count && msg.type == 'update') {
+		//	console.log("Broadcast to client: "+JSON.stringify(msg)+"\r\n");
+		//	count --;
+		//}
 		for (var i = 0; i < players.length; i++) {
+			//players[i].socket.write(JSON.stringify(msg)+"\r\n");
 			players[i].socket.write(JSON.stringify(msg));
 		}
 	};
@@ -36,7 +42,8 @@ function Session(sid) {
 	 * e.g., unicast(socket, {type: "abc", x: 30});
 	 */
 	var unicast = function (player, msg) {
-		player.socket.write(JSON.stringify(msg));
+		console.log("Unicast to client: "+JSON.stringify(msg)+"\r\n");
+		player.socket.write(JSON.stringify(msg)+"\r\n");
 	};
 
 	/*
@@ -99,11 +106,16 @@ function Session(sid) {
             var count = 0;
             for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
                 for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
-                    states.zooMap[count] = { type: zooMap.cells[x][y].type,
+                    states.zooMap[count] = { tile_type: zooMap.cells[x][y].type,
                         item: zooMap.cells[x][y].item, x: x, y: y};
                     count ++;
                 }
             }
+			//counter_debug++
+			//if(counter_debug == 1){
+			//	console.log("Broadcast to client: "+JSON.stringify(states)+"\r\n");
+			//}
+			
             broadcast(states);
 		} else {
 			reset();
@@ -222,6 +234,9 @@ function Session(sid) {
 				//console.log("plantBomb: " + msg);
 				break;
 
+			case "pingRefresh":
+				unicast(conn, {type: "pingRefresh", content: ""});
+				break;
 			default:
 				console.log("Unhandled: " + msg.type);
 		}

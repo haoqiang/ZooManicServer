@@ -1,6 +1,6 @@
 var Zoo = {
-	TREE_PERCENTAGE : 50,	// percentage of trees in the map
-	ITEM_PERCENTAGE : 50,	// percentage of items over the tree
+	TREE_PERCENTAGE : 5,	// percentage of trees in the map
+	ITEM_PERCENTAGE : 5,	// percentage of items over the tree
 	ZOO_WIDTH : 38,			// number of horizontal cells
 	ZOO_HEIGHT : 28,		// number of vertical cells
 	CELL_WIDTH : 3.4,		// width of a cell in px
