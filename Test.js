@@ -27,7 +27,7 @@ function TestClient() {
 	var initNetwork = function () {
 		// Attempts to connect to game server
 		try {
-			console.log("http://" + Zoo.SERVER_NAME + ":" + Zoo.PORT);
+			console.log("http://" + "ec2-54-225-24-113.compute-1.amazonaws.com" + ":" + Zoo.PORT);
 			//socket = new SockJS("http://" + Zoo.SERVER_NAME + ":" + Zoo.PORT + "/zoo");
 			socket = io.connect('http://localhost:5000');
 			//socket.onmessage = function (e) {
@@ -80,13 +80,13 @@ test.start();
 
 setTimeout(function(){
 	// first set names
-	test.sendToServer({type:"setProperty", properties:{name: "a", age: 7, avatarId: 1}});
-	// get game rooms
-	test.sendToServer({type:"getAllSession"});
-	// join a room
-	test.sendToServer({type:"setSession", sessionId:"100000"});
-	// see the changes
-	test.sendToServer({type:"getAllSession"});
+	// test.sendToServer({type:"setProperty", properties:{name: "a", age: 7, avatarId: 1}});
+	// // get game rooms
+	// test.sendToServer({type:"getAllSession"});
+	// // join a room
+	// test.sendToServer({type:"setSession", sessionId:"100000"});
+	// // see the changes
+	// test.sendToServer({type:"getAllSession"});
 
 	// try start
 	//test.sendToServer({type:"start"});
