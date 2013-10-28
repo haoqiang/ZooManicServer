@@ -11,6 +11,7 @@ function Player(id, socket) {
 	this.avatarId = -1;
 	this.socket = socket;
 	this.sessionId;
+	this.items;
 
 
 
@@ -21,10 +22,8 @@ function Player(id, socket) {
 	this.y;
 
 	this.isAlive = true;
-	this.speed = 5;			// default player speed
-	this.haste = 0;
-	this.invulnerable = 0;
-	this.disguise = 0;
+	this.speed = 15;			// default player speed
+	this.items = [0, 0, 0, 0, 0];
 	this.bombLeft = 3;
 
 

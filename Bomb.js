@@ -1,6 +1,6 @@
 "use strict";
 
-function Bomb(type, playerId, xPos, yPos) {
+function Bomb(type, playerId, xPos, yPos, range) {
 
 	/* Public variables */
 	this.type;
@@ -17,7 +17,7 @@ function Bomb(type, playerId, xPos, yPos) {
 	this.x = xPos;
 	this.y = yPos;
 	this.playerId = playerId;
-	this.range = 3;
+	this.range = 3 || range;
 	this.isShakable = false;
 	this.timer = new Date().getTime();
 
