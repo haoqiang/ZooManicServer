@@ -202,7 +202,7 @@ function Session(sid) {
 	//  executing the incoming message
 	this.digest = function (player, msg) {
 		switch (msg.type) {
-			case "ready":
+			case "playerReady":
 				var selectedAvatar = selectAvatar(player, msg.avatarId);
                 if(selectedAvatar){
                     unicast(player, {type:"readyReply", status: 0, content: {id: player.id, avatarId: selectedAvatar}});

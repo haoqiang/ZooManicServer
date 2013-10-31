@@ -138,13 +138,9 @@ function Server() {
 						case "getSession":
 							unicast(conn, {type: "oneSession", content: players[playerId].sessionId});
 							break;
-							
-						// After client is Ready, server need to broadcast message to client to says that, 
+						// After client is Ready, server need to broadcast message to client to says that,
 						case "getRoomSession":
 							unicast(conn, {type: "roomSession", content: getSessionStats()});
-							break;
-						case "getAllSession":
-							unicast(conn, {type: "session", content: getSessionStats()});
 							break;
 						case "pingRefresh":
 							unicast(conn, {type: "pingRefresh", content: ""});
