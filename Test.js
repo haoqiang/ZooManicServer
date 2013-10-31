@@ -30,8 +30,8 @@ function TestClient() {
 	this.initNetwork = function () {
 		// Attempts to connect to game server
 		try {
-			socket = new SockJS("http://" + Zoo.SERVER_NAME + ":" + Zoo.PORT + "");
-			//socket = new SockJS("http://localhost:" + Zoo.PORT + "");
+			//socket = new SockJS("http://" + Zoo.SERVER_NAME + ":" + Zoo.PORT + "");
+			socket = new SockJS("http://localhost:" + Zoo.PORT + "");
 			socket.onmessage = function (e) {
 				var message = JSON.parse(e.data);
 

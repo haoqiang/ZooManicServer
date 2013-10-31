@@ -174,6 +174,7 @@ function Session(sid) {
 	 *
 	 * Start a new game. Initialize the map and start the game loop
 	 */
+	 var serverTime;
 	var startGame = function () {
 		if (gameInterval !== undefined) {
 			// There is already a timer running so the game has already started.
@@ -188,9 +189,10 @@ function Session(sid) {
                 players[i].y = startPoint[i].y;
             }
 
-
+			serverTime = new Date().getTime();
+			
             console.log("Session state:\n" + JSON.stringify(that.getState(), null, 2))
-            broadcast({type:"start", content: that.getState().players});
+            broadcast({type:"start", content: that.getState().players, timestamp: serverTime});
 
 
             gameEnd = false;
@@ -205,7 +207,7 @@ function Session(sid) {
 			case "ready":
 				var selectedAvatar = selectAvatar(player, msg.avatarId);
                 if(selectedAvatar){
-                    unicast(player, {type:"readyReply", status: 0, content: {id: player.id, avatarId: selectedAvatar}});
+                    broadcast({type:"readyReply", status: 0, content: {id: player.id, avatarId: selectedAvatar}});
                 }else{
                     unicast(player, {type:"readyReply", status: 1});
                 }
@@ -221,10 +223,10 @@ function Session(sid) {
 				break;
 
 			case "move":
-				unicast(player, {type:"message", content:"user call move"});
+				broadcast({type:"move", direction: msg.direction, speed: msg.speed});
 				//console.log("move: " + msg);
-                player.x = msg.x;
-                player.y = msg.y;
+                //player.x = msg.x;
+                //player.y = msg.y;
 				break;
 
 			case "plantBomb":
