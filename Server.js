@@ -142,6 +142,9 @@ function Server() {
 						case "getRoomSession":
 							unicast(conn, {type: "roomSession", content: getSessionStats()});
 							break;
+						case "getAllSession":
+							unicast(conn, {type: "session", content: getSessionStats()});
+							break;
 						case "pingRefresh":
 							unicast(conn, {type: "pingRefresh", content: ""});
 							break;
