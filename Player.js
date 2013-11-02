@@ -7,6 +7,7 @@ function Player(id, name, socket) {
 	//
 	this.id = id;
 	this.name = name;
+	this.delay;
 	this.socket = socket; // May change along playing
 
 	//
@@ -35,6 +36,7 @@ function Player(id, name, socket) {
 		return {
 			id        : this.id,
 			name      : this.name,
+			delay     : this.delay,
 			isAlive   : this.isAlive,
 			avatarId  : this.avatarId,
 			sessionId : this.sessionId

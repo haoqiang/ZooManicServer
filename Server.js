@@ -43,9 +43,28 @@ function Server() {
 		}
 		return result;
 	}
+	var getAllPlayerStats = function () {
+		var result = [];
+		for (var key in players) {
+			if (players.hasOwnProperty(key)) {
+				result.push(players[key].getState());
+			}
+		}
+		return result;
+	}
 
+	var updateDelay = function(playerId){
+		if( playerId === undefined ){
+			broadcast({type: "ping", timestamp: new Date().getTime()});
+		} else {
+			unicast(players[playerId].socket, {type: "ping", timestamp: new Date().getTime()});
+		}
+	}
 
 	this.start = function () {
+		// Set up the delay detection
+		setInterval(updateDelay, 10000);
+
 		// init all instances, so that players can see
 		for (var i = 0; i < maxGameRoomNumber; i++) {
 			sessions["10000" + i] = new Session("10000" + i);
@@ -80,18 +99,18 @@ function Server() {
 					//
 					//	check new incoming connection player id
 					//
-					if(message.type!=="newPlayer"){
-						if(playerId === undefined || players[playerId] === undefined){
-							unicast(conn, {type: "message", status: 1, content: "PlayerId not exist, please apply for new user again."});
-							return;
-						} else {
-							if(players[playerId].socket !== conn){
-								players[playerId].socket = conn;
-								console.log("    Player: " + players[playerId].name + "[" + playerId + "] updated connection.");
-							}
+					if(message.type === "newPlayer"){
+					}
+					if(playerId === undefined || players[playerId] === undefined){
+						unicast(conn, {type: "message", status: 1, content: "PlayerId not exist, please apply for new user again."});
+						return;
+					} else {
+						if(players[playerId].socket !== conn){
+							players[playerId].socket = conn;
+							console.log("    Player: " + players[playerId].name + "[" + playerId + "] updated connection.");
 						}
 					}
-					//console.log("   Recieve:\n" + JSON.stringify(message, null, 2));
+					console.log("   Recieve:\n" + JSON.stringify(message, null, 2));
 					switch (message.type) {
 						case "newPlayer":
 							//
@@ -141,8 +160,12 @@ function Server() {
 						case "getRoomSession":
 							unicast(conn, {type: "roomSession", content: getSessionStats()});
 							break;
+						case "getAllPlayerStats":
+							unicast(conn, {type: "playerStates", content: getAllPlayerStats()});
+							break;
 						case "ping":
-							unicast(conn, {type: "ping", timestamp: ""});
+							// Delay is half RTT
+							players[playerId].delay = (new Date().getTime() - message.timestamp)/2;
 							break;
 						default:
 							//

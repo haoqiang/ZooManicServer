@@ -4,6 +4,7 @@ function TestClient() {
 	// private variables
 	var socket;         // socket used to connect to server
 	var playerId;
+	var that = this;
 
 
 	/*
@@ -41,6 +42,9 @@ function TestClient() {
 				if(message.type==="newPlayerReply"){
 					playerId = message.playerId;
 				}
+				if(message.type==="ping"){
+					that.sendToServer(message);
+				}
 
 			};
 		} catch (e) {
@@ -73,12 +77,12 @@ $(document).ready(function(){
 	test.start();
 
 
-	// var delay = 1500;
-	// var interval = 500;
-	// setTimeout(function(){
-	// 	document.getElementById("output").innerHTML += "<p><b>Step 1: Request server to create new player</b></p>";
-	// 	test.sendToServer({type:"newPlayer", playerName: "test player"});
-	// }, delay);
+	var delay = 1000;
+	var interval = 500;
+	setTimeout(function(){
+		document.getElementById("output").innerHTML += "<p><b>Step 1: Request server to create new player</b></p>";
+		test.sendToServer({type:"newPlayer", playerName: "test player"});
+	}, delay);
 	// delay += interval;
 	// setTimeout(function(){
 	// 	document.getElementById("output").innerHTML += "<p><b>Step 2: Get all available game rooms</b></p>";
@@ -124,7 +128,14 @@ $(document).ready(function(){
 
 
 
+	$("#getAllSession").on("click", function(){
+		test.sendToServer({type:"getAllPlayerStats"});
+	});
 
+
+	$("#testPing").on("click", function(){
+		test.sendToServer({type:"test"});
+	});
 
 
 
