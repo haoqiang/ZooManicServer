@@ -15,10 +15,15 @@ function Session(sid) {
 	var gameEnd = true;
 	var counter_debug = 0;
 
-    var startPoint = [{ x: 0,               y: 0 },
+   /* var startPoint = [{ x: 0,               y: 0 },
                       { x: Zoo.ZOO_WIDTH-1, y: 0 },
                       { x: 0,               y: Zoo.ZOO_HEIGHT-1 },
-                      { x: Zoo.ZOO_WIDTH-1, y: Zoo.ZOO_HEIGHT-1 }];
+                      { x: Zoo.ZOO_WIDTH-1, y: Zoo.ZOO_HEIGHT-1 }];*/
+					  
+	var startPoint = [{ x: 0, y: 0 },
+			  { x: 1, y: 0 },
+			  { x: 0, y: 2 },
+			  { x: 2, y: 2 }];
     var serverTime;
 
 	/*
@@ -278,6 +283,7 @@ function Session(sid) {
 
 	//  executing the incoming message
 	this.digest = function (player, msg) {
+	console.log("SESSION   Recieve:\n" + JSON.stringify(msg, null, 2));
 		switch (msg.type) {
 			case "playerReady":
 				var selectedAvatar = selectAvatar(player, msg.avatarId);
