@@ -103,6 +103,7 @@ function Server() {
 
 				/* When the client send data to the server */
 				conn.on('data', function (data) {
+					console.log(data);
 					var message = JSON.parse(data);
 					var playerId = message.playerId;
 					//

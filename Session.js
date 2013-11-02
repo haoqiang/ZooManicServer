@@ -298,6 +298,7 @@ function Session(sid) {
 				break;
 
 			case "move":
+                console.log(msg);
 				broadcast({
                     type:       "move",
                     playerId:   player.id,
