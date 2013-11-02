@@ -7,16 +7,34 @@
         var global = {}; // For node.js require
     </script>
     <style>
-
-
+    p{
+        margin: 10px 0;
+    }
     </style>
     </head>
     <body>
         <h1>
             Zoo test
         </h1>
-        <button id="getAllSession">Get all session!</button>
-        <button id="testPing">Test Ping!</button>
+        <p><b>Step 1: Wait the server to create a new player</b></p>
+        <p id="newPlayer"></p>
+        <hr>
+
+        <p>Only use this when you see sucess message above: </p>
+        <p>
+            <button id="getAllPlayer">Get all player state!</button>
+            <button id="getAllSession">Get all session!</button>
+        </p>
+        <p>
+            SessionId: <input type="text" id="sessionId" value="100000">
+            <button id="setSession">Set session!</button></p>
+        <p id="playerControl">
+            AvatarId: <input type="text" id="sessionId" value="0">
+            <button id="ready">Ready</button>
+            <button id="start">Start</button>
+            <button id="move">Move</button>
+        </p>
+
         <div id="output"></div>
     </body>
     <script type="text/javascript" src="./Zoo.js"></script>

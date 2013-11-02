@@ -53,8 +53,17 @@ function Server() {
 		return result;
 	}
 
+	var pingInterval = 5000;
 	var updateDelay = function(playerId){
 		if( playerId === undefined ){
+			for (var key in players) {
+				if (players.hasOwnProperty(key)) {
+					if (new Date().getTime() - players[key].lastPing > pingInterval * 10) {
+						delete players[key];
+						console.log("Player " + key + " removed due to ");
+					}
+				}
+			}
 			broadcast({type: "ping", timestamp: new Date().getTime()});
 		} else {
 			unicast(players[playerId].socket, {type: "ping", timestamp: new Date().getTime()});
@@ -63,7 +72,7 @@ function Server() {
 
 	this.start = function () {
 		// Set up the delay detection
-		setInterval(updateDelay, 10000);
+		setInterval(updateDelay, pingInterval);
 
 		// init all instances, so that players can see
 		for (var i = 0; i < maxGameRoomNumber; i++) {
@@ -100,7 +109,7 @@ function Server() {
 					//	check new incoming connection player id
 					//
 
-					console.log("   Recieve:\n" + JSON.stringify(message, null, 2));
+					//console.log("   Recieve:\n" + JSON.stringify(message, null, 2));
 
 					if(message.type === "newPlayer"){
 						playerId = new Date().getTime();

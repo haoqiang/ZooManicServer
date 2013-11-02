@@ -271,7 +271,6 @@ function Session(sid) {
             gameEnd = false;
             console.log("Session " + that.sid + " start playing!");
             gameInterval = setInterval(gameLoop, 1000 / Zoo.FRAME_RATE);
-            roomInterval = setInterval(sessionCheckingLoop, 60000);
 		}
 	};
 
@@ -298,11 +297,11 @@ function Session(sid) {
 
 			case "move":
 				broadcast({
-                    type:       "move", 
+                    type:       "move",
                     playerId:   player.id,
                     cellX:      msg.cellX,
                     cellY:      msg.cellY,
-                    direction:  msg.direction, 
+                    direction:  msg.direction,
                     speed:      player.speed
                 });
                 // wait for delay
