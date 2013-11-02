@@ -7,13 +7,13 @@ function Player(id, name, socket) {
 	//
 	this.id = id;
 	this.name = name;
-	this.socket = socket;
-
-	this.sessionId; // May change along playing
+	this.socket = socket; // May change along playing
 
 	//
-	//	Updated before game start
+	//	Updated before game start,
+	//  When player first joi
 	//
+	this.sessionId;
 	this.avatarId = -1;
 
 	//
@@ -23,30 +23,45 @@ function Player(id, name, socket) {
 	this.y;
 
 	this.isMoving = false;
+	this.direction;
+
 	this.speed = 15;
 	this.cellSpeed = this.speed / Zoo.CELL_WIDTH / Zoo.FRAME_RATE; // cell distance per frame
 	this.bombLeft = 3;
-	this.isAlive = true;
+	this.isAlive = false;
 	this.items = [0, 0, 0, 0, 0];
 
+
+	//
+	//	Init when send out update
+	//
 	this.getState = function () {
 		return {
-			id      : this.id,
-			x		: this.x,
-			y		: this.y,
-			name    : this.name,
-			avatarId: this.avatarId
+			id        : this.id,
+			name      : this.name,
+			isAlive   : this.isAlive,
+			avatarId  : this.avatarId,
+			sessionId : this.sessionId
 		}
 	}
 
-	this.moveOneStep = function (direction) {
+	this.getPosition = function(){
+		return{
+			id : this.id,
+			x: this.x,
+			y: this.y,
+			direction: this.direction
+		}
+	}
+
+	this.moveOneStep = function () {
 		if (isMoving == false)
 			return;
 
 		var oldPosX = this.x;
 		var oldPosY = this.y;
 
-		switch (direction) {
+		switch (this.direction) {
 			case "UP":
 				this.y += this.cellSpeed;
 				if (this.y >= Math.ceil(oldPosY))		// moved to the next cell
