@@ -260,6 +260,8 @@ function Session(sid) {
             for (var i = 0; i < players.length; i++) {
                 players[i].x = startPoint[i].x;
                 players[i].y = startPoint[i].y;
+                players[i].spawnX = players[i].x;
+                players[i].spawnY = players[i].y;
             }
 
 			serverTime = new Date().getTime();
