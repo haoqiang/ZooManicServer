@@ -99,6 +99,9 @@ function Server() {
 					//
 					//	check new incoming connection player id
 					//
+
+					console.log("   Recieve:\n" + JSON.stringify(message, null, 2));
+
 					if(message.type === "newPlayer"){
 						playerId = new Date().getTime();
 						var playerName = message.playerName;
@@ -109,6 +112,7 @@ function Server() {
 						playerCount++;
 						//	update total player count
 						broadcast({type: "totalPlayerCount", totalPlayer: playerCount});
+
 					}else{
 						if(playerId === undefined || players[playerId] === undefined){
 							unicast(conn, {type: "message", status: 1, content: "PlayerId not exist, please apply for new user again."});
@@ -119,7 +123,6 @@ function Server() {
 								console.log("    Player: " + players[playerId].name + "[" + playerId + "] updated connection.");
 							}
 						}
-						console.log("   Recieve:\n" + JSON.stringify(message, null, 2));
 						switch (message.type) {
 							case "setProperty":
 								//
