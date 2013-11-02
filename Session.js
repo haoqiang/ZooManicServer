@@ -299,11 +299,11 @@ function Session(sid) {
 
 			case "move":
 				broadcast({
-                    type:       "move", 
+                    type:       "move",
                     playerId:   player.id,
                     cellX:      msg.cellX,
                     cellY:      msg.cellY,
-                    direction:  msg.direction, 
+                    direction:  msg.direction,
                     speed:      player.speed
                 });
                 // wait for delay
