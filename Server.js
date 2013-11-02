@@ -109,70 +109,70 @@ function Server() {
 						playerCount++;
 						//	update total player count
 						broadcast({type: "totalPlayerCount", totalPlayer: playerCount});
-						return;
-					}
-					if(playerId === undefined || players[playerId] === undefined){
-						unicast(conn, {type: "message", status: 1, content: "PlayerId not exist, please apply for new user again."});
-						return;
-					} else {
-						if(players[playerId].socket !== conn){
-							players[playerId].socket = conn;
-							console.log("    Player: " + players[playerId].name + "[" + playerId + "] updated connection.");
+					}else{
+						if(playerId === undefined || players[playerId] === undefined){
+							unicast(conn, {type: "message", status: 1, content: "PlayerId not exist, please apply for new user again."});
+							return;
+						} else {
+							if(players[playerId].socket !== conn){
+								players[playerId].socket = conn;
+								console.log("    Player: " + players[playerId].name + "[" + playerId + "] updated connection.");
+							}
 						}
-					}
-					console.log("   Recieve:\n" + JSON.stringify(message, null, 2));
-					switch (message.type) {
-						case "setProperty":
-							//
-							//	map all properties to user
-							//
-							var properties = message.properties;
-							for (var key in properties) {
-								if (properties.hasOwnProperty(key)) {
-									players[playerId][key] = properties[key];
+						console.log("   Recieve:\n" + JSON.stringify(message, null, 2));
+						switch (message.type) {
+							case "setProperty":
+								//
+								//	map all properties to user
+								//
+								var properties = message.properties;
+								for (var key in properties) {
+									if (properties.hasOwnProperty(key)) {
+										players[playerId][key] = properties[key];
+									}
 								}
-							}
-							unicast(conn, {type: "setPropertyReply", status: 0});
-							break;
-						case "setSession":
-							//
-							//	add new player to session
-							//
-							var sessionId = message.sessionId;
-							if (sessions[sessionId] !== undefined) {
-								if (sessions[sessionId].getPlayerNumber() < maxGameRoomSize) {
-									sessions[sessionId].addPlayer(players[playerId]);
-									unicast(conn, {type: "message", status: 0, content: "New player added."});
+								unicast(conn, {type: "setPropertyReply", status: 0});
+								break;
+							case "setSession":
+								//
+								//	add new player to session
+								//
+								var sessionId = message.sessionId;
+								if (sessions[sessionId] !== undefined) {
+									if (sessions[sessionId].getPlayerNumber() < maxGameRoomSize) {
+										sessions[sessionId].addPlayer(players[playerId]);
+										unicast(conn, {type: "message", status: 0, content: "New player added."});
+									} else {
+										unicast(conn, {type: "message", status: 1, content: "The room is full."});
+									}
 								} else {
-									unicast(conn, {type: "message", status: 1, content: "The room is full."});
+									unicast(conn, {type: "message", status: 2, content: "Session not exist."});
 								}
-							} else {
-								unicast(conn, {type: "message", status: 2, content: "Session not exist."});
-							}
-							break;
-						case "getSession":
-							unicast(conn, {type: "oneSession", content: players[playerId].sessionId});
-							break;
-						case "getRoomSession":
-							unicast(conn, {type: "roomSession", content: getSessionStats()});
-							break;
-						case "getAllPlayerStats":
-							unicast(conn, {type: "playerStates", content: getAllPlayerStats()});
-							break;
-						case "ping":
-							// Delay is half RTT
-							players[playerId].delay = (new Date().getTime() - message.timestamp)/2;
-							break;
-						default:
-							//
-							// if user belongs to a session, pass the message
-							//    to that session to handle
-							//
-							if (players[playerId].sessionId !== undefined) {
-								sessions[players[playerId].sessionId].digest(players[playerId], message);
-							} else {
-								console.log("Unhandled message." + message.type);
-							}
+								break;
+							case "getSession":
+								unicast(conn, {type: "oneSession", content: players[playerId].sessionId});
+								break;
+							case "getRoomSession":
+								unicast(conn, {type: "roomSession", content: getSessionStats()});
+								break;
+							case "getAllPlayerStats":
+								unicast(conn, {type: "playerStates", content: getAllPlayerStats()});
+								break;
+							case "ping":
+								// Delay is half RTT
+								players[playerId].delay = (new Date().getTime() - message.timestamp)/2;
+								break;
+							default:
+								//
+								// if user belongs to a session, pass the message
+								//    to that session to handle
+								//
+								if (players[playerId].sessionId !== undefined) {
+									sessions[players[playerId].sessionId].digest(players[playerId], message);
+								} else {
+									console.log("Unhandled message." + message.type);
+								}
+						}
 					}
 				});
 			});
