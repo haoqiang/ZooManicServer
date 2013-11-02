@@ -15,15 +15,15 @@ function Session(sid) {
 	var gameEnd = true;
 	var counter_debug = 0;
 
-   /* var startPoint = [{ x: 0,               y: 0 },
+    var startPoint = [{ x: 0,               y: 0 },
                       { x: Zoo.ZOO_WIDTH-1, y: 0 },
                       { x: 0,               y: Zoo.ZOO_HEIGHT-1 },
-                      { x: Zoo.ZOO_WIDTH-1, y: Zoo.ZOO_HEIGHT-1 }];*/
+                      { x: Zoo.ZOO_WIDTH-1, y: Zoo.ZOO_HEIGHT-1 }];
 
-	var startPoint = [{ x: 0, y: 0 },
-			  { x: 1, y: 0 },
-			  { x: 0, y: 2 },
-			  { x: 2, y: 2 }];
+	// var startPoint = [{ x: 0, y: 0 },
+	// 		  { x: 1, y: 0 },
+	// 		  { x: 0, y: 2 },
+	// 		  { x: 2, y: 2 }];
     var serverTime;
 
 	/*
@@ -97,7 +97,7 @@ function Session(sid) {
 
                     states.bombs.exploded.push({x: bombs[i].x, y: bombs[i].y});
                     bombExplode(bombs[i], i);
-                    
+
                     // remove the bomb from the array
                     //bombs.splice(i, 1);
                     //console.log(bombs[i]);
@@ -298,6 +298,8 @@ function Session(sid) {
                 }
                 if (selectedAvatar){
                     broadcast({type:"selectedAvatar", content: player.avatarId});
+
+                    console.log("[Session " + that.sid + "]: Player "+player.id+" ready!");
                 }
 				break;
 
@@ -339,7 +341,7 @@ function Session(sid) {
 	this.addPlayer = function (newPlayer) {
 		newPlayer.sessionId = this.sid;
 		players.push(newPlayer);
-		console.log("    Session " + that.sid + " add new player.");
+        console.log("[Session " + that.sid + "]: Add new player "+newPlayer.id+"!");
 	};
 
 	// return current states

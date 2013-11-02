@@ -10,15 +10,8 @@
     p{
         margin: 10px 0;
     }
-    .me .id{
-        color: red;
+    .id{
         font-weight: bold;
-    }
-    .me .bomb{
-        display: inline-block;
-    }
-    .bomb{
-        display: none;
     }
     </style>
     </head>
@@ -27,25 +20,51 @@
             Zoo test
         </h1>
         <p><b>Step 1: Wait the server to create a new player</b></p>
-        <p id="newPlayer">Wait!!</p>
+        <p class="newPlayer">Wait!!</p>
         <hr>
 
         <p><b>Step 2: Now you can join a game session</b></p>
         <p>Only use below when you see sucess message above:
-            <button id="auto">Automated test</button>
+            <button class="auto">Automated test (first only)</button>
+            <button class="autoAll">Automated test (all)</button>
         </p>
         <p>
-            <button id="getAllPlayer">Get all player state!</button>
-            <button id="getAllSession">Get all session!</button>
+            <button class="getAllPlayer">Get all player state!</button>
+            <button class="getAllSession">Get all session!</button>
+            SessionId: <input type="text" id="sessionId" value="100000" size="7">
+            <button class="setAllSession">Set all session!</button>
+            <button class="readyAll">Ready for all</button>
         </p>
-        <p>
-            SessionId: <input type="text" id="sessionId" value="100000">
-            <button id="setSession">Set session!</button></p>
-        <p id="gameControl">
-            AvatarId: <input type="text" id="avatarId" value="0" size="5">
-            <button id="ready">Ready</button>
-            <button id="start">Start</button>
-        </p>
+        <div id="gameControl">
+            <p class="player">Player <span class="id"></span>:
+                SessionId: <input type="text" class="sessionId" value="100000" size="7">
+                <button class="setSession">Set session!</button>
+                AvatarId: <input type="text" class="avatarId" value="0" size="3">
+                <button class="ready">Ready</button>
+                <button class="start">Start</button>
+            </p>
+            <p class="player">Player <span class="id"></span>:
+                SessionId: <input type="text" class="sessionId" value="100000" size="7">
+                <button class="setSession">Set session!</button>
+                AvatarId: <input type="text" class="avatarId" value="1" size="3">
+                <button class="ready">Ready</button>
+                <button class="start">Start</button>
+            </p>
+            <p class="player">Player <span class="id"></span>:
+                SessionId: <input type="text" class="sessionId" value="100000" size="7">
+                <button class="setSession">Set session!</button>
+                AvatarId: <input type="text" class="avatarId" value="2" size="3">
+                <button class="ready">Ready</button>
+                <button class="start">Start</button>
+            </p>
+            <p class="player">Player <span class="id"></span>:
+                SessionId: <input type="text" class="sessionId" value="100000" size="7">
+                <button class="setSession">Set session!</button>
+                AvatarId: <input type="text" class="avatarId" value="3" size="3">
+                <button class="ready">Ready</button>
+                <button class="start">Start</button>
+            </p>
+        </div>
         <hr>
 
         <p><b>Step 3: See player states after start</b></p>
@@ -53,21 +72,37 @@
             <p class="player">Player <span class="id"></span>: Current position:
                 X: <input type="text" class="pos_x" value="0" size="5">
                 Y: <input type="text" class="pos_y" value="0" size="5">
+                <button class="up">↑</button>
+                <button class="left">←</button>
+                <button class="down">↓</button>
+                <button class="right">→</button>
                 <button class="bomb">Plant Bomb</button>
             </p>
             <p class="player">Player <span class="id"></span>: Current position:
                 X: <input type="text" class="pos_x" value="0" size="5">
                 Y: <input type="text" class="pos_y" value="0" size="5">
+                <button class="up">↑</button>
+                <button class="left">←</button>
+                <button class="down">↓</button>
+                <button class="right">→</button>
                 <button class="bomb">Plant Bomb</button>
             </p>
             <p class="player">Player <span class="id"></span>: Current position:
                 X: <input type="text" class="pos_x" value="0" size="5">
                 Y: <input type="text" class="pos_y" value="0" size="5">
+                <button class="up">↑</button>
+                <button class="left">←</button>
+                <button class="down">↓</button>
+                <button class="right">→</button>
                 <button class="bomb">Plant Bomb</button>
             </p>
             <p class="player">Player <span class="id"></span>: Current position:
                 X: <input type="text" class="pos_x" value="0" size="5">
                 Y: <input type="text" class="pos_y" value="0" size="5">
+                <button class="up">↑</button>
+                <button class="left">←</button>
+                <button class="down">↓</button>
+                <button class="right">→</button>
                 <button class="bomb">Plant Bomb</button>
             </p>
         </div>

@@ -104,7 +104,6 @@ function Server() {
 				/* When the client send data to the server */
 				conn.on('data', function (data) {
 
-					console.log("SERVER   Recieve:\n" + data);
 					var message = JSON.parse(data);
 					var playerId = message.playerId;
 					//

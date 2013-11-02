@@ -1,22 +1,19 @@
 "use strict";
 
-function TestClient() {
+
+function TestClient(id) {
+
 	// private variables
 	var socket;         // socket used to connect to server
 	var playerId;
+	var that = this;
+
+	// public
+	this.subjectId = id;
 	this.playerList = {};
 	this.x;
 	this.y;
-	var that = this;
 
-
-	/*
-	 * private method: sendToServer(msg)
-	 *
-	 * The method takes in a JSON structure and send it
-	 * to the server, after converting the structure into
-	 * a string.
-	 */
 	this.sendToServer = function (msg) {
 		if(playerId!==undefined){
 			msg.playerId = playerId;
@@ -27,12 +24,6 @@ function TestClient() {
 		socket.send(JSON.stringify(msg));
 	}
 
-	/*
-	 * private method: initNetwork(msg)
-	 *
-	 * Connects to the server and initialize the various
-	 * callbacks.
-	 */
 	this.initNetwork = function () {
 		// Attempts to connect to game server
 		try {
@@ -46,14 +37,23 @@ function TestClient() {
 				var message = JSON.parse(e.data);
 
 				if(message.type!=="ping"){
-					$("#output").prepend("<hr>incoming:<br><pre>"+JSON.stringify(message, null, 4)+"</pre>");
+					//$("#output").prepend("<hr>incoming:<br><pre>"+JSON.stringify(message, null, 4)+"</pre>");
 				}
 
 				switch(message.type){
 					case "newPlayerReply":
 						playerId = message.playerId;
-						$("#playerInfo").find(".player").eq(0).addClass("me").find(".id").html(playerId);
-						$("#newPlayer").html("Success: new player created with id: " + playerId);
+						$("#gameControl").find(".player").eq(that.subjectId)
+							.addClass("player"+playerId)
+							.attr("playerId", playerId)
+							.attr("subjectId", that.subjectId).find(".id")
+							.css({"color": textColor[that.subjectId]}).html(playerId);
+						$("#playerInfo").find(".player").eq(that.subjectId)
+							.addClass("player"+playerId)
+							.attr("playerId", playerId)
+							.attr("subjectId", that.subjectId).find(".id")
+							.css({"color": textColor[that.subjectId]}).html(playerId);
+						$("#newPlayer").append("<br>Success: new player created with id: " + playerId);
 						break;
 					case "ping":
 						that.sendToServer(message);
@@ -64,11 +64,10 @@ function TestClient() {
 							that.playerList[currentId] = {};
 							that.playerList[currentId].x = message.content[i].spawnX;
 							that.playerList[currentId].y = message.content[i].spawnY;
-							$("#playerInfo").find(".player").eq(i).removeClass("me").find(".id").html(currentId);
+							$("#playerInfo").find(".player"+playerId).find(".id").html(currentId).append(" started!");
 							if(currentId === playerId){
 								that.x = message.content[i].spawnX;
 								that.y = message.content[i].spawnY;
-								$("#playerInfo").find(".player").eq(i).addClass("me");
 							}
 						}
 						that.refresh();
@@ -83,6 +82,9 @@ function TestClient() {
 								if(key+"" === playerId+""){
 									that.x = players[key].x;
 									that.y = players[key].y;
+									if(!players[key].isAlive){
+										$("#output").prepend("<h3>Player "+playerId+" is killed!</h3>");
+									}
 								}
 							}
 						}
@@ -104,7 +106,7 @@ function TestClient() {
 
 	this.refresh = function(){
 		$("#playerInfo").find(".player").each(function(){
-			var sid = $(this).find(".id").html();
+			var sid = $(this).attr("playerId");
 			if(that.playerList[sid]!== undefined){
 				$(this).find(".pos_x").val(that.playerList[sid].x);
 				$(this).find(".pos_y").val(that.playerList[sid].y);
@@ -113,148 +115,174 @@ function TestClient() {
 	}
 
 	this.move = function(dir){
-		this.sendToServer({type:"move", cellX: this.playerList[playerId].x, cellY: this.playerList[playerId].y, direction: dir});
+		this.sendToServer({type:"move", cellX: this.x, cellY: this.y, direction: dir});
 	}
 
-
-	/*
-	 * priviledge method: start
-	 *
-	 * Create the ball and paddles objects, connects to
-	 * server, draws the GUI, and starts the rendering
-	 * loop.
-	 */
 	this.start = function () {
 
 		// Initialize network and GUI
 		this.initNetwork();
+		var delay = 3000;
+		if(location.host === ""){
+			delay = 1000;
+		}
+		setTimeout(function(){
+			that.sendToServer({type:"newPlayer", playerName: "TestPlayer-"+Math.floor((Math.random()*10)) });
+		}, delay+10*that.subjectId);
 	}
 }
 
-var delay = 3000;
-if(location.host === ""){
-	delay = 1000;
-}
-var interval = 600;
-var test = new TestClient();
-test.start();
-setTimeout(function(){
-	test.sendToServer({type:"newPlayer", playerName: "TestPlayer-"+Math.floor((Math.random()*100)+1) });
-}, delay);
+var interval = 2000;
 
+
+
+var textColor = ["red", "green", "orange", "blue"];
+var testMove = ["UP RIGHT UP RIGHT UP RIGHT",
+				"UP LEFT UP LEFT UP LEFT",
+				"DOWN RIGHT DOWN RIGHT DOWN RIGHT",
+				"DOWN LEFT DOWN LEFT DOWN LEFT"];
+
+
+var testSubject = [];
+var testSubjectSize = 4;
+
+for(var i=0; i<testSubjectSize; i++){
+	testSubject.push(new TestClient(i));
+	testSubject[i].start();
+}
 
 $(document).ready(function(){
 
-	$("#getAllPlayer").on("click", function(){
-		test.sendToServer({type:"getAllPlayerStats"});
+	$(".getAllPlayer").on("click", function(){
+		testSubject[0].sendToServer({type:"getAllPlayerStats"});
 	});
 
-	$("#getAllSession").on("click", function(){
-		test.sendToServer({type:"getAllSession"});
+	$(".getAllSession").on("click", function(){
+		testSubject[0].sendToServer({type:"getAllSession"});
 	});
 
-	$("#setSession").on("click", function(){
+	$(".setAllSession").on("click", function(){
 		var sid = $("#sessionId").val();
 		if($.isNumeric(sid)){
-			test.sendToServer({type:"setSession", sessionId: sid});
+			for(var i=0; i<testSubjectSize; i++){
+				testSubject[i].sendToServer({type:"setSession", sessionId: sid});
+			}
 		}
 	});
 
-	$("#ready").on("click", function(){
-		var avatarId = $("#avatarId").val();
-		avatarId = $.isNumeric(parseInt(avatarId))?avatarId:0;
-		test.sendToServer({type:"playerReady", avatarId: avatarId});
+	$(".readyAll").on("click", function(){
+		for(var i=0; i<testSubjectSize; i++){
+			testSubject[i].sendToServer({type:"playerReady", avatarId: i});
+		}
 	});
 
-	$("#start").on("click", function(){
-		test.sendToServer({type:"start"});
+	$(".setSession").on("click", function(){
+		var subjectId = $(this).parent(".player").attr("subjectId");
+
+		var sid = $(this).parent(".player").find(".sessionId").val();
+		if($.isNumeric(sid)){
+			testSubject[subjectId].sendToServer({type:"setSession", sessionId: sid});
+		}
+	});
+
+	$(".ready").on("click", function(){
+		var subjectId = $(this).parent(".player").attr("subjectId");
+		var avatarId = $("#avatarId").val();
+		avatarId = $.isNumeric(parseInt(avatarId))?avatarId:0;
+
+		testSubject[subjectId].sendToServer({type:"playerReady", avatarId: avatarId});
+	});
+
+	$(".start").on("click", function(){
+		var subjectId = $(this).parent(".player").attr("subjectId");
+
+		testSubject[subjectId].sendToServer({type:"start"});
 	});
 
 	$(".bomb").on("click", function(){
-		test.sendToServer({type:"plantBomb", x: test.x, y: test.y});
+		var subjectId = $(this).parent(".player").attr("subjectId");
+
+		testSubject[subjectId].sendToServer({type:"plantBomb", x: testSubject[subjectId].x, y: testSubject[subjectId].y});
+	});
+
+
+	$(".up").on("click", function(){
+		var subjectId = $(this).parent(".player").attr("subjectId");
+
+		testSubject[subjectId].move("UP");
+	});
+
+	$(".left").on("click", function(){
+		var subjectId = $(this).parent(".player").attr("subjectId");
+
+		testSubject[subjectId].move("LEFT");
+	});
+
+	$(".down").on("click", function(){
+		var subjectId = $(this).parent(".player").attr("subjectId");
+
+		testSubject[subjectId].move("DOWN");
+	});
+
+	$(".right").on("click", function(){
+		var subjectId = $(this).parent(".player").attr("subjectId");
+
+		testSubject[subjectId].move("RIGHT");
 	});
 
 
 
-	$("#auto").on("click", function(){
-		automatedTest();
+	$(".auto").on("click", function(){
+		testSubject[0].sendToServer({type:"setSession", sessionId:"100000"});
+		testSubject[0].sendToServer({type:"start"});
+		automatedTestFor(0, 50, "UP RIGHT UP RIGHT");
 	});
-
-
-
-
-	$(document).keydown(function(e){
-	    if (e.keyCode == 37) {
-	    	test.move("LEFT");
-	       	return false;
-	    }
-	    if (e.keyCode == 38) {
-	    	test.move("UP");
-	       return false;
-	    }
-	    if (e.keyCode == 39) {
-	    	test.move("RIGHT");
-	       return false;
-	    }
-	    if (e.keyCode == 40) {
-	    	test.move("DOWN");
-	       return false;
-	    }
+	$(".autoAll").on("click", function(){
+		var sid = $("#sessionId").val();
+		var delay = 0;
+		delay = delayCallback(function(){
+			for(var i=0; i<testSubjectSize; i++){
+				testSubject[i].sendToServer({type:"setSession", sessionId: sid});
+			}
+		}, delay);
+		delay = delayCallback(function(){
+			for(var i=0; i<testSubjectSize; i++){
+				testSubject[i].sendToServer({type:"playerReady", avatarId: i});
+			}
+		}, delay);
+		delay = delayCallback(function(){
+			testSubject[0].sendToServer({type:"start"});
+		}, delay);
+		delay = delayCallback(function(){
+			for(var i=0; i<testSubjectSize; i++){
+				automatedTestFor(i, 50*i, testMove[i]);
+			}
+		}, delay);
 	});
-
 });
 
-function delayCallback(callback){
+function delayCallback(callback, delay){
 	setTimeout(callback, delay);
-	delay += interval;
+	return delay + interval;
 }
-function automatedTest(){
 
-	delay = 50;
-	delayCallback(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 3: Join a game rooms</b></p>";
-		test.sendToServer({type:"setSession", sessionId:"100000"});
-	});
-	delayCallback(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 4: Start the game</b></p>";
-		test.sendToServer({type:"start"});
-	});
-	delayCallback(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 5: Make some move</b></p>";
-		test.move("UP");
-	});
-	delayCallback(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 6: Try disconnect</b></p><hr>";
-		test.disconnectNetwork();
-	});
-	delayCallback(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 8: Try reconnect</b></p><hr>";
-		test.initNetwork();
-	});
-	delayCallback(function(){
-		test.move("UP");
-	});
-	delayCallback(function(){
-		test.move("UP");
-	});
-	delayCallback(function(){
-		test.move("UP");
-	});
-	delayCallback(function(){
-		test.move("RIGHT");
-	});
-	delayCallback(function(){
-		test.move("RIGHT");
-	});
-	delayCallback(function(){
-		test.move("RIGHT");
-	});
-	delayCallback(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 9: Try plant bomb</b></p>";
-		test.sendToServer({type:"plantBomb", x: test.x, y: test.y});
-	});
+function automatedTestFor(subjectId, initialDelay, moveSequence){
+
+	var delay = initialDelay;
+	moveSequence = moveSequence.split(" ");
 
 
+	for(var i=0; i<moveSequence.length; i++){
+		var dir = moveSequence[i];
+		setTimeout(function(dir, i){
+			console.log("testSubject" +i+" move " + dir+". ");
+			testSubject[subjectId].move(dir);
+		}, delay, dir, subjectId);
+		delay += interval;
+	}
+	delayCallback(function(){
+		testSubject[subjectId].sendToServer({type:"plantBomb", x: testSubject[subjectId].x, y: testSubject[subjectId].y});
+	}, delay);
 
 }
 
