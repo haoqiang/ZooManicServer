@@ -8,6 +8,7 @@ function Player(id, name, socket) {
 	this.id = id;
 	this.name = name;
 	this.delay;
+	this.lastPing;
 	this.socket = socket; // May change along playing
 
 	//
@@ -87,8 +88,8 @@ function Player(id, name, socket) {
 				if (this.x >= Math.ceil(oldPosX))		// moved to the next cell
 					isMoving = false;
 				break;
-			
-			default: 
+
+			default:
 				console.log("Unhanled movement");
 		}
 	}

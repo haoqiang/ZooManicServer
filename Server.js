@@ -106,14 +106,19 @@ function Server() {
 						playerId = new Date().getTime();
 						var playerName = message.playerName;
 						players[playerId] = new Player(playerId, playerName, conn);
-						console.log("    Player: " + playerName + "[" + playerId + "] created.");
+
 						//	return player id
 						unicast(conn, {type: "newPlayerReply", status: 0, playerId: playerId});
-						playerCount++;
-						//	update total player count
-						broadcast({type: "totalPlayerCount", totalPlayer: playerCount});
 
-					}else{
+						//  breif wait to measure the delay, because player must recieve
+						//     its id first before it can reply to ping
+						setTimeout(updateDelay, 250);
+
+						//	update total player count
+						playerCount++;
+						broadcast({type: "totalPlayerCount", totalPlayer: playerCount});
+						console.log("    Player: " + playerName + "[" + playerId + "] created.");
+					} else {
 						if(playerId === undefined || players[playerId] === undefined){
 							unicast(conn, {type: "message", status: 1, content: "PlayerId not exist, please apply for new user again."});
 							return;
@@ -158,12 +163,17 @@ function Server() {
 							case "getRoomSession":
 								unicast(conn, {type: "roomSession", content: getSessionStats()});
 								break;
+							case "getAllSession":
+								unicast(conn, {type: "session", content: getSessionStats()});
+								break;
 							case "getAllPlayerStats":
 								unicast(conn, {type: "playerStates", content: getAllPlayerStats()});
 								break;
 							case "ping":
 								// Delay is half RTT
-								players[playerId].delay = (new Date().getTime() - message.timestamp)/2;
+								var currentTime = new Date().getTime();
+								players[playerId].delay = (currentTime - message.timestamp)/2;
+								players[playerId].lastPing = currentTime;
 								break;
 							default:
 								//
