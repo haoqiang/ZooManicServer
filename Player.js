@@ -58,7 +58,7 @@ function Player(id, name, socket) {
 	}
 
 	this.moveOneStep = function () {
-		if (isMoving == false)
+		if (this.isMoving == false)
 			return;
 
 		var oldPosX = this.x;
