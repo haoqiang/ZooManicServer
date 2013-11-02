@@ -15,8 +15,11 @@ function Session(sid) {
 	var gameEnd = true;
 	var counter_debug = 0;
 
-    var startPoint = [{ x: 0, y: 0 },  {x: Zoo.ZOO_WIDTH-1, y: 0},
-        {x: 0, y: Zoo.ZOO_HEIGHT-1}, {x: Zoo.ZOO_WIDTH-1, y: Zoo.ZOO_HEIGHT-1}];
+    var startPoint = [{ x: 0,               y: 0 },
+                      { x: Zoo.ZOO_WIDTH-1, y: 0 },
+                      { x: 0,               y: Zoo.ZOO_HEIGHT-1 },
+                      { x: Zoo.ZOO_WIDTH-1, y: Zoo.ZOO_HEIGHT-1 }];
+    var serverTime;
 
 	/*
 	 * broadcast takes in a JSON structure and send it to
@@ -57,6 +60,11 @@ function Session(sid) {
 			clearInterval(gameInterval);
 			gameInterval = undefined;
 			gameEnd = true;
+            // remove all player
+            for(var i =0; i < players.plength; i++){
+                players[i] = null;
+            }
+            player = [];
 		}
 		console.log("Session " + that.sid + " has just ended!");
 	};
@@ -96,8 +104,8 @@ function Session(sid) {
             states.players = {};
             for (var i = 0; i < players.length; i++) {
                 states.players[players[i].id] = {
-                	x: players[i].x, 
-                	y: players[i].y, 
+                	x: players[i].x,
+                	y: players[i].y,
                 	bombLeft: players[i].bombLeft,
                 	isAlive: players[i].isAlive
                 };
@@ -201,7 +209,7 @@ function Session(sid) {
         for (var i = 0; i < players.length; i++) {
             if ((players[i].x > x-0.5 || players[i].x < x+0.5) && (players[i].y > y-0.5 || players[i].y < y+0.5))
                 players[i].isAlive = false;
-        }    	
+        }
     }
 
     // Check if the player get item the the new position
@@ -237,7 +245,6 @@ function Session(sid) {
 	 *
 	 * Start a new game. Initialize the map and start the game loop
 	 */
-	 var serverTime;
 	var startGame = function () {
 		if (gameInterval !== undefined) {
 			// There is already a timer running so the game has already started.
@@ -253,14 +260,15 @@ function Session(sid) {
             }
 
 			serverTime = new Date().getTime();
-			
+
             console.log("Session state:\n" + JSON.stringify(that.getState(), null, 2))
             broadcast({type:"start", content: that.getState().players, timestamp: serverTime});
 
 
             gameEnd = false;
             console.log("Session " + that.sid + " start playing!");
-			gameInterval = setInterval(gameLoop, 1000 / Zoo.FRAME_RATE);
+            gameInterval = setInterval(gameLoop, 1000 / Zoo.FRAME_RATE);
+            roomInterval = setInterval(sessionCheckingLoop, 60000);
 		}
 	};
 
@@ -297,9 +305,6 @@ function Session(sid) {
 				//console.log("plantBomb: " + msg);
 				break;
 
-			case "pingRefresh":
-				unicast(conn, {type: "pingRefresh", content: ""});
-				break;
 			default:
 				console.log("Unhandled: " + msg.type);
 		}
@@ -313,16 +318,6 @@ function Session(sid) {
 		newPlayer.sessionId = this.sid;
 		players.push(newPlayer);
 		console.log("    Session " + that.sid + " add new player.");
-	};
-
-	this.removePlayer = function (oldPlayer) {
-		for (var i = 0; i < players.length; i++) {
-			if (players[i].id = oldPlayer.id) {
-				players.splice(i,1);
-				break;
-			}
-		}
-		console.log("    Session " + that.sid + " remove one player.");
 	};
 
 	// return current states

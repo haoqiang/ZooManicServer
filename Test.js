@@ -68,60 +68,58 @@ function TestClient() {
 	}
 }
 
-
-var test = new TestClient();
-test.start();
-
-
-var delay = 1500;
-var interval = 500;
+$(document).ready(function(){
+	var test = new TestClient();
+	test.start();
 
 
-setTimeout(function(){
-	document.getElementById("output").innerHTML += "<p><b>Step 1: Request server to create new player</b></p>";
-	test.sendToServer({type:"newPlayer", playerName: "test player"});
-}, delay);
-delay += interval;
-setTimeout(function(){
-	document.getElementById("output").innerHTML += "<p><b>Step 2: Get all available game rooms</b></p>";
-	test.sendToServer({type:"getAllSession"});
-}, delay);
-delay += interval;
-setTimeout(function(){
-	document.getElementById("output").innerHTML += "<p><b>Step 3: Join a game rooms</b></p>";
-	test.sendToServer({type:"setSession", sessionId:"100000"});
-}, delay);
-delay += interval;
-setTimeout(function(){
-	document.getElementById("output").innerHTML += "<p><b>Step 4: Start the game</b></p>";
-	test.sendToServer({type:"start"});
-}, delay);
-delay += interval;
-setTimeout(function(){
-	document.getElementById("output").innerHTML += "<p><b>Step 5: Make some move</b></p>";
-	test.sendToServer({type:"move", x: 5, y: 5});
-}, delay);
-delay += interval;
-setTimeout(function(){
-	document.getElementById("output").innerHTML += "<p><b>Step 6: Try disconnect</b></p><hr>";
-	test.disconnectNetwork();
-}, delay);
-delay += interval;
-setTimeout(function(){
-	document.getElementById("output").innerHTML += "<p><b>Step 8: Try reconnect</b></p><hr>";
-	test.initNetwork();
-}, delay);
-delay += interval;
-setTimeout(function(){
-	document.getElementById("output").innerHTML += "<p><b>Step 9: Try make some move</b></p>";
-	test.sendToServer({type:"move", x: 51, y: 51});
-}, delay);
-delay += interval;
-setTimeout(function(){
-	document.getElementById("output").innerHTML += "<p><b>Step 9: Try make some move again</b></p>";
-	test.sendToServer({type:"move", x: 51, y: 51});
-}, delay);
-delay += interval;
+	// var delay = 1500;
+	// var interval = 500;
+	// setTimeout(function(){
+	// 	document.getElementById("output").innerHTML += "<p><b>Step 1: Request server to create new player</b></p>";
+	// 	test.sendToServer({type:"newPlayer", playerName: "test player"});
+	// }, delay);
+	// delay += interval;
+	// setTimeout(function(){
+	// 	document.getElementById("output").innerHTML += "<p><b>Step 2: Get all available game rooms</b></p>";
+	// 	test.sendToServer({type:"getAllSession"});
+	// }, delay);
+	// delay += interval;
+	// setTimeout(function(){
+	// 	document.getElementById("output").innerHTML += "<p><b>Step 3: Join a game rooms</b></p>";
+	// 	test.sendToServer({type:"setSession", sessionId:"100000"});
+	// }, delay);
+	// delay += interval;
+	// setTimeout(function(){
+	// 	document.getElementById("output").innerHTML += "<p><b>Step 4: Start the game</b></p>";
+	// 	test.sendToServer({type:"start"});
+	// }, delay);
+	// delay += interval;
+	// setTimeout(function(){
+	// 	document.getElementById("output").innerHTML += "<p><b>Step 5: Make some move</b></p>";
+	// 	test.sendToServer({type:"move", x: 5, y: 5});
+	// }, delay);
+	// delay += interval;
+	// setTimeout(function(){
+	// 	document.getElementById("output").innerHTML += "<p><b>Step 6: Try disconnect</b></p><hr>";
+	// 	test.disconnectNetwork();
+	// }, delay);
+	// delay += interval;
+	// setTimeout(function(){
+	// 	document.getElementById("output").innerHTML += "<p><b>Step 8: Try reconnect</b></p><hr>";
+	// 	test.initNetwork();
+	// }, delay);
+	// delay += interval;
+	// setTimeout(function(){
+	// 	document.getElementById("output").innerHTML += "<p><b>Step 9: Try make some move</b></p>";
+	// 	test.sendToServer({type:"move", x: 51, y: 51});
+	// }, delay);
+	// delay += interval;
+	// setTimeout(function(){
+	// 	document.getElementById("output").innerHTML += "<p><b>Step 9: Try make some move again</b></p>";
+	// 	test.sendToServer({type:"move", x: 51, y: 51});
+	// }, delay);
+	// delay += interval;
 
 
 
@@ -130,3 +128,5 @@ delay += interval;
 
 
 
+
+});

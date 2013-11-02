@@ -109,7 +109,7 @@ function Server() {
 							break;
 						case "setProperty":
 							//
-							//map all properties to user
+							//	map all properties to user
 							//
 							var properties = message.properties;
 							for (var key in properties) {
@@ -121,7 +121,7 @@ function Server() {
 							break;
 						case "setSession":
 							//
-							//add new player to session
+							//	add new player to session
 							//
 							var sessionId = message.sessionId;
 							if (sessions[sessionId] !== undefined) {
@@ -138,20 +138,16 @@ function Server() {
 						case "getSession":
 							unicast(conn, {type: "oneSession", content: players[playerId].sessionId});
 							break;
-						// After client is Ready, server need to broadcast message to client to says that,
 						case "getRoomSession":
 							unicast(conn, {type: "roomSession", content: getSessionStats()});
 							break;
-						case "getAllSession":
-							unicast(conn, {type: "session", content: getSessionStats()});
-							break;
-						case "pingRefresh":
-							unicast(conn, {type: "pingRefresh", content: ""});
+						case "ping":
+							unicast(conn, {type: "ping", timestamp: ""});
 							break;
 						default:
 							//
-							//if user belongs to a session, pass the message
-							 // to that session to handle
+							// if user belongs to a session, pass the message
+							//    to that session to handle
 							//
 							if (players[playerId].sessionId !== undefined) {
 								sessions[players[playerId].sessionId].digest(players[playerId], message);
