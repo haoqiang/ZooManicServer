@@ -103,12 +103,13 @@ function Session(sid) {
             // put players position inside the message
             states.players = {};
             for (var i = 0; i < players.length; i++) {
-                states.players[players[i].id] = {
-                	x: players[i].x,
-                	y: players[i].y,
-                	bombLeft: players[i].bombLeft,
-                	isAlive: players[i].isAlive
-                };
+                // states.players[players[i].id] = {
+                // 	x: players[i].x,
+                // 	y: players[i].y,
+                // 	bombLeft: players[i].bombLeft,
+                // 	isAlive: players[i].isAlive
+                // };
+                players[i].moveOneStep();
             }
 
             // put the map inside the message
@@ -240,6 +241,8 @@ function Session(sid) {
     	return true;
     }
 
+    var simulateMove
+
 	/*
 	 * private method: startGame()
 	 *
@@ -294,10 +297,17 @@ function Session(sid) {
 				break;
 
 			case "move":
-				broadcast({type:"move", direction: msg.direction, speed: msg.speed});
-				//console.log("move: " + msg);
-                //player.x = msg.x;
-                //player.y = msg.y;
+				broadcast({
+                    type:       "move", 
+                    playerId:   player.id,
+                    cellX:      msg.cellX,
+                    cellY:      msg.cellY,
+                    direction:  msg.direction, 
+                    speed:      player.speed
+                });
+                // wait for delay
+                player.isMoving = true;
+                player.direction = msg.direction;
 				break;
 
 			case "plantBomb":
