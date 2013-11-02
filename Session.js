@@ -95,8 +95,9 @@ function Session(sid) {
                 if (bombs[i].isExploded()) {
                     console.log(bombs[i]);
 
-                    bombExplode(bombs[i], i);
                     states.bombs.exploded.push({x: bombs[i].x, y: bombs[i].y});
+                    bombExplode(bombs[i], i);
+                    
                     // remove the bomb from the array
                     //bombs.splice(i, 1);
                     //console.log(bombs[i]);
@@ -158,7 +159,7 @@ function Session(sid) {
         }
 
     	// Remove the bomb from the bombs array
-    	bombs.splice(i, 1);
+    	bombs.splice(bombIdx, 1);
 
         console.log("\n" + JSON.stringify(zooMap.cells, null, 2));
         console.log("\n" + JSON.stringify(bomb, null, 2));
