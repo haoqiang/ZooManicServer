@@ -232,6 +232,8 @@ function Session(sid) {
     	return true;
     }
 
+    var simulateMove
+
 	/*
 	 * private method: startGame()
 	 *
@@ -286,10 +288,16 @@ function Session(sid) {
 				break;
 
 			case "move":
-				broadcast({type:"move", direction: msg.direction, speed: msg.speed});
-				//console.log("move: " + msg);
-                //player.x = msg.x;
-                //player.y = msg.y;
+				broadcast({
+                    type:       "move", 
+                    playerId:   player.id,
+                    cellX:      msg.cellX,
+                    cellY:      msg.cellY,
+                    direction:  msg.direction, 
+                    speed:      player.speed
+                });
+                // wait for delay
+                player.isMoving = true;
 				break;
 
 			case "plantBomb":
