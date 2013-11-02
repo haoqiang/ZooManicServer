@@ -100,6 +100,16 @@ function Server() {
 					//	check new incoming connection player id
 					//
 					if(message.type === "newPlayer"){
+						playerId = new Date().getTime();
+						var playerName = message.playerName;
+						players[playerId] = new Player(playerId, playerName, conn);
+						console.log("    Player: " + playerName + "[" + playerId + "] created.");
+						//	return player id
+						unicast(conn, {type: "newPlayerReply", status: 0, playerId: playerId});
+						playerCount++;
+						//	update total player count
+						broadcast({type: "totalPlayerCount", totalPlayer: playerCount});
+						return;
 					}
 					if(playerId === undefined || players[playerId] === undefined){
 						unicast(conn, {type: "message", status: 1, content: "PlayerId not exist, please apply for new user again."});
@@ -112,20 +122,6 @@ function Server() {
 					}
 					console.log("   Recieve:\n" + JSON.stringify(message, null, 2));
 					switch (message.type) {
-						case "newPlayer":
-							//
-							//	called at the very begining of each gameplay, we may remove the user when game finish
-							//
-							playerId = new Date().getTime();
-							var playerName = message.playerName;
-							players[playerId] = new Player(playerId, playerName, conn);
-							console.log("    Player: " + playerName + "[" + playerId + "] created.");
-							//	return player id
-							unicast(conn, {type: "newPlayerReply", status: 0, playerId: playerId});
-							playerCount++;
-							//	update total player count
-							broadcast({type: "totalPlayerCount", totalPlayer: playerCount});
-							break;
 						case "setProperty":
 							//
 							//	map all properties to user
