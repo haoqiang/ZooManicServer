@@ -32,7 +32,7 @@ function TestClient() {
 		// Attempts to connect to game server
 		try {
 			//socket = new SockJS("http://" + Zoo.SERVER_NAME + ":" + Zoo.PORT + "");
-			if(location.host!==""){
+			if(location.host !== ""){
 				socket = new SockJS("http://"+location.host+":" + Zoo.PORT + "");
 			}else{
 				socket = new SockJS("http://localhost:" + Zoo.PORT + "");
@@ -77,12 +77,14 @@ function TestClient() {
 	}
 }
 
+var test = new TestClient();
+test.start();
+
 $(document).ready(function(){
-	var test = new TestClient();
-	test.start();
 
 
-	var delay = 1500;
+	var delay = 3000;
+
 	var interval = 500;
 	setTimeout(function(){
 		document.getElementById("output").innerHTML += "<p><b>Step 1: Request server to create new player</b></p>";
