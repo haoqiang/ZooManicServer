@@ -23,6 +23,8 @@ function Player(id, name, socket) {
 	//
 	this.x;
 	this.y;
+	this.spawnX;
+	this.spawnY;
 
 	this.isMoving = false;
 	this.direction;
@@ -44,6 +46,8 @@ function Player(id, name, socket) {
 			delay     : this.delay,
 			isAlive   : this.isAlive,
 			avatarId  : this.avatarId,
+			spawnX	  : this.spawnX,
+			spawnY	  : this.spawnY,
 			sessionId : this.sessionId
 		}
 	}
@@ -58,7 +62,7 @@ function Player(id, name, socket) {
 	}
 
 	this.moveOneStep = function () {
-		if (isMoving == false)
+		if (this.isMoving == false)
 			return;
 
 		var oldPosX = this.x;
