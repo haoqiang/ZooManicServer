@@ -72,25 +72,25 @@ function Player(id, name, socket) {
 			case "UP":
 				this.y += this.cellSpeed;
 				if (this.y >= Math.ceil(oldPosY))		// moved to the next cell
-					isMoving = false;
+					this.isMoving = false;
 				break;
 
 			case "DOWN":
 				this.y -= this.cellSpeed;
 				if (this.y >= Math.floor(oldPosY))		// moved to the next cell
-					isMoving = false;
+					this.isMoving = false;
 				break;
 
 			case "LEFT":
 				this.x -= this.cellSpeed;
 				if (this.x >= Math.floor(oldPosX))		// moved to the next cell
-					isMoving = false;
+					this.isMoving = false;
 				break;
 
 			case "RIGHT":
 				this.x += this.cellSpeed;
 				if (this.x >= Math.ceil(oldPosX))		// moved to the next cell
-					isMoving = false;
+					this.isMoving = false;
 				break;
 
 			default:
