@@ -30,7 +30,7 @@ function Session(sid) {
 	var broadcast = function (msg) {
 		//if (count && msg.type == 'update') {
 		//	console.log("Broadcast to client: "+JSON.stringify(msg)+"\r\n");
-		//	count --;
+		//	count--;
 		//}
 		for (var i = 0; i < players.length; i++) {
 			players[i].socket.write(JSON.stringify(msg));
@@ -103,25 +103,25 @@ function Session(sid) {
             // put players position inside the message
             states.players = {};
             for (var i = 0; i < players.length; i++) {
-                // states.players[players[i].id] = {
-                // 	x: players[i].x,
-                // 	y: players[i].y,
-                // 	bombLeft: players[i].bombLeft,
-                // 	isAlive: players[i].isAlive
-                // };
                 players[i].moveOneStep();
+                states.players[players[i].id] = {
+                	x: players[i].x,
+                	y: players[i].y,
+                	bombLeft: players[i].bombLeft,
+                	isAlive: players[i].isAlive
+                };
             }
 
             // put the map inside the message
-            states.zooMap = {};
-            var count = 0;
-            for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
-                for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
-                    states.zooMap[count] = { tile_type: zooMap.cells[x][y].type,
-                        item: zooMap.cells[x][y].item, x: x, y: y};
-                    count ++;
-                }
-            }
+            // states.zooMap = {};
+            // var count = 0;
+            // for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
+            //     for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
+            //         states.zooMap[count] = { tile_type: zooMap.cells[x][y].type,
+            //             item: zooMap.cells[x][y].item, x: x, y: y};
+            //         count ++;
+            //     }
+            // }
 			//counter_debug++
 			//if(counter_debug == 1){
 			//	console.log("Broadcast to client: "+JSON.stringify(states)+"\r\n");
