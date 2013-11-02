@@ -5,6 +5,8 @@ function TestClient() {
 	var socket;         // socket used to connect to server
 	var playerId;
 	var that = this;
+	this.x;
+	this.y;
 
 
 	/*
@@ -48,8 +50,16 @@ function TestClient() {
 				}else if(message.type!=="update" && message.type!=="ping"){
 					$("#output").prepend("<hr>incoming:<br><pre>"+JSON.stringify(message, null, 4)+"</pre>");
 				}
-				if(message.type==="ping"){
-					that.sendToServer(message);
+
+				switch(message.type){
+					case "ping":
+						that.sendToServer(message);
+						break;
+					case "start":
+
+						break;
+					default:
+						break;
 				}
 			};
 		} catch (e) {
