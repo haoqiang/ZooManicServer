@@ -71,26 +71,34 @@ function Player(id, name, socket) {
 		switch (this.direction) {
 			case "UP":
 				this.y += this.cellSpeed;
-				if (this.y >= Math.ceil(oldPosY))		// moved to the next cell
+				if (this.y >= Math.floor(oldPosY+1)) {		// moved to the next cell
 					this.isMoving = false;
+					this.y = Math.round(this.y);
+				}
 				break;
 
 			case "DOWN":
 				this.y -= this.cellSpeed;
-				if (this.y >= Math.floor(oldPosY))		// moved to the next cell
+				if (this.y <= Math.ceil(oldPosY-1)) {	// moved to the next cell
 					this.isMoving = false;
+					this.y = Math.round(this.y);
+				}
 				break;
 
 			case "LEFT":
 				this.x -= this.cellSpeed;
-				if (this.x >= Math.floor(oldPosX))		// moved to the next cell
+				if (this.x <= Math.ceil(oldPosX-1)) {	// moved to the next cell
 					this.isMoving = false;
+					this.x = Math.round(this.x);
+				}
 				break;
 
 			case "RIGHT":
 				this.x += this.cellSpeed;
-				if (this.x >= Math.ceil(oldPosX))		// moved to the next cell
+				if (this.x >= Math.floor(oldPosX+1)) {		// moved to the next cell
 					this.isMoving = false;
+					this.x = Math.round(this.x);
+				}
 				break;
 
 			default:

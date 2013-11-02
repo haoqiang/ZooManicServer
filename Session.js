@@ -169,34 +169,34 @@ function Session(sid) {
 
         for (var i = 1; i <= bomb.range; i++) {
             // if bomb explode upward
-            if (up && typeof zooMap.cells[bomb.x][bomb.y+i] !== undefined && zooMap.cells[bomb.x][bomb.y+i].type != 2) {
+            if (up && bomb.y+i < Zoo.ZOO_HEIGHT && zooMap.cells[bomb.x][bomb.y+i].type != 2) {
                 zooMap.cells[bomb.x][bomb.y+i].type = 0;
                 explodeOtherBomb(bomb.x, bomb.y+i);
-                killPlayer(bomb.x, bomb.y+i);
+                killPlayer(bomb.x, bomb.y+i);                    
             } else {
             	up = false;
             }
 
-            if (down && typeof zooMap.cells[bomb.x][bomb.y-i] !== undefined && zooMap.cells[bomb.x][bomb.y-i].type != 2) {
+            if (down && bomb.y-i > 0 && zooMap.cells[bomb.x][bomb.y-i].type != 2) {
                 zooMap.cells[bomb.x][bomb.y-i].type = 0;
                 explodeOtherBomb(bomb.x, bomb.y-i);
-                killPlayer(bomb.x, bomb.y-i);
+                killPlayer(bomb.x, bomb.y-i);                    
             } else {
             	down = false;
             }
 
-            if (left && typeof zooMap.cells[bomb.x-i][bomb.y] !== undefined && zooMap.cells[bomb.x-i][bomb.y].type != 2) {
+            if (left && bomb.x-i > 0 && zooMap.cells[bomb.x-i][bomb.y].type != 2) {
                 zooMap.cells[bomb.x-i][bomb.y].type = 0;
                 explodeOtherBomb(bomb.x-i, bomb.y);
-                killPlayer(bomb.x-i, bomb.y);
+                killPlayer(bomb.x-i, bomb.y);                    
             } else {
             	left = false;
             }
 
-            if (right && typeof zooMap.cells[bomb.x+i][bomb.y] !== undefined && zooMap.cells[bomb.x+i][bomb.y].type != 2) {
+            if (right && bomb.x+i < Zoo.ZOO_WIDTH && zooMap.cells[bomb.x+i][bomb.y].type != 2) {
                 zooMap.cells[bomb.x+i][bomb.y].type = 0;
                 explodeOtherBomb(bomb.x+i, bomb.y);
-                killPlayer(bomb.x+i, bomb.y);
+                killPlayer(bomb.x+i, bomb.y);                    
             } else {
             	right = false;
             }
