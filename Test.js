@@ -74,17 +74,15 @@ function TestClient() {
 						that.refresh();
 						break;
 					case "update":
-						var currentId = message.playerId;
 						var players = message.players;
-
 						for(var key in players){
 							if(players.hasOwnProperty(key)){
 								that.playerList[key].x = players[key].x;
 								that.playerList[key].y = players[key].y;
 								that.playerList[key].isAlive = players[key].isAlive;
-								if(currentId === playerId){
+								if(key+"" === playerId+""){
 									that.x = players[key].x;
-									that.y = players[key].x;
+									that.y = players[key].y;
 								}
 							}
 						}
@@ -134,7 +132,10 @@ function TestClient() {
 }
 
 var delay = 3000;
-var interval = 500;
+if(location.host === ""){
+	delay = 1000;
+}
+var interval = 600;
 var test = new TestClient();
 test.start();
 setTimeout(function(){
@@ -169,13 +170,16 @@ $(document).ready(function(){
 		test.sendToServer({type:"start"});
 	});
 
-	$(".move").on("click", function(){
-		test.sendToServer({type:"move", cellX: test.x, cellY: test.y, direction: "UP"});
-	});
-
 	$(".bomb").on("click", function(){
 		test.sendToServer({type:"plantBomb", x: test.x, y: test.y});
 	});
+
+
+
+	$("#auto").on("click", function(){
+		automatedTest();
+	});
+
 
 
 
@@ -200,47 +204,61 @@ $(document).ready(function(){
 
 });
 
-function automatedTest(){
-
-	delay += interval;
-	setTimeout(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 2: Get all available game rooms</b></p>";
-		test.sendToServer({type:"getAllSession"});
-	}, delay);
-	delay += interval;
-	setTimeout(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 3: Join a game rooms</b></p>";
-		test.sendToServer({type:"setSession", sessionId:"100000"});
-	}, delay);
-	delay += interval;
-	setTimeout(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 4: Start the game</b></p>";
-		test.sendToServer({type:"start"});
-	}, delay);
-	delay += interval;
-	setTimeout(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 5: Make some move</b></p>";
-		test.sendToServer({type:"move", x: 5, y: 5});
-	}, delay);
-	delay += interval;
-	setTimeout(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 6: Try disconnect</b></p><hr>";
-		test.disconnectNetwork();
-	}, delay);
-	delay += interval;
-	setTimeout(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 8: Try reconnect</b></p><hr>";
-		test.initNetwork();
-	}, delay);
-	delay += interval;
-	setTimeout(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 9: Try make some move</b></p>";
-		test.sendToServer({type:"move", x: 51, y: 51});
-	}, delay);
-	delay += interval;
-	setTimeout(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 9: Try make some move again</b></p>";
-		test.sendToServer({type:"move", x: 51, y: 51});
-	}, delay);
+function delayCallback(callback){
+	setTimeout(callback, delay);
 	delay += interval;
 }
+function automatedTest(){
+
+	delay = 50;
+	delayCallback(function(){
+		document.getElementById("output").innerHTML += "<p><b>Step 3: Join a game rooms</b></p>";
+		test.sendToServer({type:"setSession", sessionId:"100000"});
+	});
+	delayCallback(function(){
+		document.getElementById("output").innerHTML += "<p><b>Step 4: Start the game</b></p>";
+		test.sendToServer({type:"start"});
+	});
+	delayCallback(function(){
+		document.getElementById("output").innerHTML += "<p><b>Step 5: Make some move</b></p>";
+		test.move("UP");
+	});
+	delayCallback(function(){
+		document.getElementById("output").innerHTML += "<p><b>Step 6: Try disconnect</b></p><hr>";
+		test.disconnectNetwork();
+	});
+	delayCallback(function(){
+		document.getElementById("output").innerHTML += "<p><b>Step 8: Try reconnect</b></p><hr>";
+		test.initNetwork();
+	});
+	delayCallback(function(){
+		test.move("UP");
+	});
+	delayCallback(function(){
+		test.move("UP");
+	});
+	delayCallback(function(){
+		test.move("UP");
+	});
+	delayCallback(function(){
+		test.move("RIGHT");
+	});
+	delayCallback(function(){
+		test.move("RIGHT");
+	});
+	delayCallback(function(){
+		test.move("RIGHT");
+	});
+	delayCallback(function(){
+		document.getElementById("output").innerHTML += "<p><b>Step 9: Try plant bomb</b></p>";
+		test.sendToServer({type:"plantBomb", x: test.x, y: test.y});
+	});
+
+
+
+}
+
+
+
+
+

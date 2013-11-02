@@ -103,8 +103,6 @@ function Server() {
 
 				/* When the client send data to the server */
 				conn.on('data', function (data) {
-				console.log("SERVER   Recieve:\n" + data);
-				
 					var message = JSON.parse(data);
 					var playerId = message.playerId;
 					//
@@ -188,8 +186,6 @@ function Server() {
 								// if user belongs to a session, pass the message
 								//    to that session to handle
 								//
-								console.log("MESSAGE RECEIVE: "+message.type);
-								
 								if (players[playerId].sessionId !== undefined) {
 									sessions[players[playerId].sessionId].digest(players[playerId], message);
 								} else {
