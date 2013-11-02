@@ -137,8 +137,9 @@ $(document).ready(function(){
 	});
 
 
-	$("#testPing").on("click", function(){
-		test.sendToServer({type:"test"});
+
+	$("#move").on("click", function(){
+		test.sendToServer({type:"move", cellX: 5, cellY: 5, direction: "UP"});
 	});
 
 
