@@ -37,6 +37,7 @@ function TestClient() {
 			}else{
 				socket = new SockJS("http://localhost:" + Zoo.PORT + "");
 			}
+			//socket = new SockJS("http://ec2-54-225-24-113.compute-1.amazonaws.com:" + Zoo.PORT + "");
 			socket.onmessage = function (e) {
 				var message = JSON.parse(e.data);
 
@@ -81,7 +82,7 @@ $(document).ready(function(){
 	test.start();
 
 
-	var delay = 1000;
+	var delay = 1500;
 	var interval = 500;
 	setTimeout(function(){
 		document.getElementById("output").innerHTML += "<p><b>Step 1: Request server to create new player</b></p>";
