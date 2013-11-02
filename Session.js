@@ -19,7 +19,7 @@ function Session(sid) {
                       { x: Zoo.ZOO_WIDTH-1, y: 0 },
                       { x: 0,               y: Zoo.ZOO_HEIGHT-1 },
                       { x: Zoo.ZOO_WIDTH-1, y: Zoo.ZOO_HEIGHT-1 }];*/
-					  
+
 	var startPoint = [{ x: 0, y: 0 },
 			  { x: 1, y: 0 },
 			  { x: 0, y: 2 },
@@ -35,7 +35,7 @@ function Session(sid) {
 	var broadcast = function (msg) {
 		//if (count && msg.type == 'update') {
 		//	console.log("Broadcast to client: "+JSON.stringify(msg)+"\r\n");
-		//	count --;
+		//	count--;
 		//}
 		for (var i = 0; i < players.length; i++) {
 			players[i].socket.write(JSON.stringify(msg));
@@ -108,25 +108,25 @@ function Session(sid) {
             // put players position inside the message
             states.players = {};
             for (var i = 0; i < players.length; i++) {
-                // states.players[players[i].id] = {
-                // 	x: players[i].x,
-                // 	y: players[i].y,
-                // 	bombLeft: players[i].bombLeft,
-                // 	isAlive: players[i].isAlive
-                // };
                 players[i].moveOneStep();
+                states.players[players[i].id] = {
+                	x: players[i].x,
+                	y: players[i].y,
+                	bombLeft: players[i].bombLeft,
+                	isAlive: players[i].isAlive
+                };
             }
 
             // put the map inside the message
-            states.zooMap = {};
-            var count = 0;
-            for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
-                for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
-                    states.zooMap[count] = { tile_type: zooMap.cells[x][y].type,
-                        item: zooMap.cells[x][y].item, x: x, y: y};
-                    count ++;
-                }
-            }
+            // states.zooMap = {};
+            // var count = 0;
+            // for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
+            //     for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
+            //         states.zooMap[count] = { tile_type: zooMap.cells[x][y].type,
+            //             item: zooMap.cells[x][y].item, x: x, y: y};
+            //         count ++;
+            //     }
+            // }
 			//counter_debug++
 			//if(counter_debug == 1){
 			//	console.log("Broadcast to client: "+JSON.stringify(states)+"\r\n");
@@ -154,12 +154,15 @@ function Session(sid) {
     	// Remove the bomb from the bombs array
     	bombs.splice(i, 1);
 
+        console.log("\n" + JSON.stringify(zooMap.cells, null, 2));
+        console.log("\n" + JSON.stringify(bomb, null, 2));
+
         //console.log(bomb);
         var up = true, down = true, left = true, right = true;
 
         for (var i = 1; i <= bomb.range; i++) {
             // if bomb explode upward
-            if (up && zooMap.cells[bomb.x][bomb.y+i].length != 0 && zooMap.cells[bomb.x][bomb.y+i].type != 2) {
+            if (up && zooMap.cells[bomb.x][bomb.y+i] !== undefined && zooMap.cells[bomb.x][bomb.y+i].type != 2) {
                 zooMap.cells[bomb.x][bomb.y+i].type = 0;
                 explodeOtherBomb(bomb.x, bomb.y+i);
                 killPlayer(bomb.x, bomb.y+i);
@@ -167,7 +170,7 @@ function Session(sid) {
             	up = false;
             }
 
-            if (down && zooMap.cells[bomb.x][bomb.y-i].length != 0 && zooMap.cells[bomb.x][bomb.y-i].type != 2) {
+            if (down && zooMap.cells[bomb.x][bomb.y-i] !== undefined && zooMap.cells[bomb.x][bomb.y-i].type != 2) {
                 zooMap.cells[bomb.x][bomb.y-i].type = 0;
                 explodeOtherBomb(bomb.x, bomb.y-i);
                 killPlayer(bomb.x, bomb.y-i);
@@ -175,7 +178,7 @@ function Session(sid) {
             	down = false;
             }
 
-            if (left && zooMap.cells[bomb.x-i][bomb.y].length != 0 && zooMap.cells[bomb.x-i][bomb.y].type != 2) {
+            if (left && zooMap.cells[bomb.x-i][bomb.y] !== undefined && zooMap.cells[bomb.x-i][bomb.y].type != 2) {
                 zooMap.cells[bomb.x-i][bomb.y].type = 0;
                 explodeOtherBomb(bomb.x-i, bomb.y);
                 killPlayer(bomb.x-i, bomb.y);
@@ -183,7 +186,7 @@ function Session(sid) {
             	left = false;
             }
 
-            if (right && zooMap.cells[bomb.x+i][bomb.y].length != 0 && zooMap.cells[bomb.x+i][bomb.y].type != 2) {
+            if (right && zooMap.cells[bomb.x+i][bomb.y] !== undefined && zooMap.cells[bomb.x+i][bomb.y].type != 2) {
                 zooMap.cells[bomb.x+i][bomb.y].type = 0;
                 explodeOtherBomb(bomb.x+i, bomb.y);
                 killPlayer(bomb.x+i, bomb.y);
@@ -283,7 +286,7 @@ function Session(sid) {
 
 	//  executing the incoming message
 	this.digest = function (player, msg) {
-	console.log("SESSION   Recieve:\n" + JSON.stringify(msg, null, 2));
+	    //console.log("SESSION   Recieve:\n" + JSON.stringify(msg, null, 2));
 		switch (msg.type) {
 			case "playerReady":
 				var selectedAvatar = selectAvatar(player, msg.avatarId);
@@ -320,7 +323,7 @@ function Session(sid) {
 
 			case "plantBomb":
                 plantBomb(player, Math.round(msg.x), Math.round(msg.y));
-				//console.log("plantBomb: " + msg);
+				console.log(msg);
 				break;
 
 			default:

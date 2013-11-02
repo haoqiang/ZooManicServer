@@ -4,9 +4,10 @@ function TestClient() {
 	// private variables
 	var socket;         // socket used to connect to server
 	var playerId;
-	var that = this;
+	this.playerList = {};
 	this.x;
 	this.y;
+	var that = this;
 
 
 	/*
@@ -44,19 +45,48 @@ function TestClient() {
 			socket.onmessage = function (e) {
 				var message = JSON.parse(e.data);
 
-				if(message.type==="newPlayerReply"){
-					playerId = message.playerId;
-					$("#newPlayer").html("Success: new player created with id: " + playerId);
-				}else if(message.type!=="update" && message.type!=="ping"){
+				if(message.type!=="ping"){
 					$("#output").prepend("<hr>incoming:<br><pre>"+JSON.stringify(message, null, 4)+"</pre>");
 				}
 
 				switch(message.type){
+					case "newPlayerReply":
+						playerId = message.playerId;
+						$("#playerInfo").find(".player").eq(0).addClass("me").find(".id").html(playerId);
+						$("#newPlayer").html("Success: new player created with id: " + playerId);
+						break;
 					case "ping":
 						that.sendToServer(message);
 						break;
 					case "start":
-
+						for(var i = 0; i<message.content.length; i++){
+							var currentId = message.content[i].id;
+							that.playerList[currentId] = {};
+							that.playerList[currentId].x = message.content[i].spawnX;
+							that.playerList[currentId].y = message.content[i].spawnY;
+							$("#playerInfo").find(".player").eq(i).removeClass("me").find(".id").html(currentId);
+							if(currentId === playerId){
+								that.x = message.content[i].spawnX;
+								that.y = message.content[i].spawnY;
+								$("#playerInfo").find(".player").eq(i).addClass("me");
+							}
+						}
+						that.refresh();
+						break;
+					case "update":
+						var players = message.players;
+						for(var key in players){
+							if(players.hasOwnProperty(key)){
+								that.playerList[key].x = players[key].x;
+								that.playerList[key].y = players[key].y;
+								that.playerList[key].isAlive = players[key].isAlive;
+								if(key+"" === playerId+""){
+									that.x = players[key].x;
+									that.y = players[key].y;
+								}
+							}
+						}
+						that.refresh();
 						break;
 					default:
 						break;
@@ -70,6 +100,20 @@ function TestClient() {
 	this.disconnectNetwork = function () {
 		// Attempts to connect to game server
 		socket.close();
+	}
+
+	this.refresh = function(){
+		$("#playerInfo").find(".player").each(function(){
+			var sid = $(this).find(".id").html();
+			if(that.playerList[sid]!== undefined){
+				$(this).find(".pos_x").val(that.playerList[sid].x);
+				$(this).find(".pos_y").val(that.playerList[sid].y);
+			}
+		});
+	}
+
+	this.move = function(dir){
+		this.sendToServer({type:"move", cellX: this.playerList[playerId].x, cellY: this.playerList[playerId].y, direction: dir});
 	}
 
 
@@ -88,7 +132,10 @@ function TestClient() {
 }
 
 var delay = 3000;
-var interval = 500;
+if(location.host === ""){
+	delay = 1000;
+}
+var interval = 600;
 var test = new TestClient();
 test.start();
 setTimeout(function(){
@@ -115,7 +162,7 @@ $(document).ready(function(){
 
 	$("#ready").on("click", function(){
 		var avatarId = $("#avatarId").val();
-		avatarId = $.isNumeric(avatarId)?avatarId:0;
+		avatarId = $.isNumeric(parseInt(avatarId))?avatarId:0;
 		test.sendToServer({type:"playerReady", avatarId: avatarId});
 	});
 
@@ -123,55 +170,95 @@ $(document).ready(function(){
 		test.sendToServer({type:"start"});
 	});
 
-	$("#move").on("click", function(){
-		test.sendToServer({type:"move", cellX: 5, cellY: 5, direction: "UP"});
+	$(".bomb").on("click", function(){
+		test.sendToServer({type:"plantBomb", x: test.x, y: test.y});
 	});
 
 
 
+	$("#auto").on("click", function(){
+		automatedTest();
+	});
+
+
+
+
+	$(document).keydown(function(e){
+	    if (e.keyCode == 37) {
+	    	test.move("LEFT");
+	       	return false;
+	    }
+	    if (e.keyCode == 38) {
+	    	test.move("UP");
+	       return false;
+	    }
+	    if (e.keyCode == 39) {
+	    	test.move("RIGHT");
+	       return false;
+	    }
+	    if (e.keyCode == 40) {
+	    	test.move("DOWN");
+	       return false;
+	    }
+	});
+
 });
 
-function automatedTest(){
-
-	delay += interval;
-	setTimeout(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 2: Get all available game rooms</b></p>";
-		test.sendToServer({type:"getAllSession"});
-	}, delay);
-	delay += interval;
-	setTimeout(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 3: Join a game rooms</b></p>";
-		test.sendToServer({type:"setSession", sessionId:"100000"});
-	}, delay);
-	delay += interval;
-	setTimeout(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 4: Start the game</b></p>";
-		test.sendToServer({type:"start"});
-	}, delay);
-	delay += interval;
-	setTimeout(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 5: Make some move</b></p>";
-		test.sendToServer({type:"move", x: 5, y: 5});
-	}, delay);
-	delay += interval;
-	setTimeout(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 6: Try disconnect</b></p><hr>";
-		test.disconnectNetwork();
-	}, delay);
-	delay += interval;
-	setTimeout(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 8: Try reconnect</b></p><hr>";
-		test.initNetwork();
-	}, delay);
-	delay += interval;
-	setTimeout(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 9: Try make some move</b></p>";
-		test.sendToServer({type:"move", x: 51, y: 51});
-	}, delay);
-	delay += interval;
-	setTimeout(function(){
-		document.getElementById("output").innerHTML += "<p><b>Step 9: Try make some move again</b></p>";
-		test.sendToServer({type:"move", x: 51, y: 51});
-	}, delay);
+function delayCallback(callback){
+	setTimeout(callback, delay);
 	delay += interval;
 }
+function automatedTest(){
+
+	delay = 50;
+	delayCallback(function(){
+		document.getElementById("output").innerHTML += "<p><b>Step 3: Join a game rooms</b></p>";
+		test.sendToServer({type:"setSession", sessionId:"100000"});
+	});
+	delayCallback(function(){
+		document.getElementById("output").innerHTML += "<p><b>Step 4: Start the game</b></p>";
+		test.sendToServer({type:"start"});
+	});
+	delayCallback(function(){
+		document.getElementById("output").innerHTML += "<p><b>Step 5: Make some move</b></p>";
+		test.move("UP");
+	});
+	delayCallback(function(){
+		document.getElementById("output").innerHTML += "<p><b>Step 6: Try disconnect</b></p><hr>";
+		test.disconnectNetwork();
+	});
+	delayCallback(function(){
+		document.getElementById("output").innerHTML += "<p><b>Step 8: Try reconnect</b></p><hr>";
+		test.initNetwork();
+	});
+	delayCallback(function(){
+		test.move("UP");
+	});
+	delayCallback(function(){
+		test.move("UP");
+	});
+	delayCallback(function(){
+		test.move("UP");
+	});
+	delayCallback(function(){
+		test.move("RIGHT");
+	});
+	delayCallback(function(){
+		test.move("RIGHT");
+	});
+	delayCallback(function(){
+		test.move("RIGHT");
+	});
+	delayCallback(function(){
+		document.getElementById("output").innerHTML += "<p><b>Step 9: Try plant bomb</b></p>";
+		test.sendToServer({type:"plantBomb", x: test.x, y: test.y});
+	});
+
+
+
+}
+
+
+
+
+
