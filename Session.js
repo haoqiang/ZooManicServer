@@ -271,7 +271,6 @@ function Session(sid) {
             gameEnd = false;
             console.log("Session " + that.sid + " start playing!");
             gameInterval = setInterval(gameLoop, 1000 / Zoo.FRAME_RATE);
-            roomInterval = setInterval(sessionCheckingLoop, 60000);
 		}
 	};
 
