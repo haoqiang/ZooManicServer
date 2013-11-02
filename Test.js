@@ -114,7 +114,7 @@ $(document).ready(function(){
 	});
 
 	$("#move").on("click", function(){
-		test.sendToServer({type:"move", x: 5, y: 5});
+		test.sendToServer({type:"move", cellX: 5, cellY: 5, direction: "UP"});
 	});
 
 
