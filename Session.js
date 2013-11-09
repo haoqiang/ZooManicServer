@@ -180,17 +180,25 @@ function Session(sid) {
 
 			switch(item) {
 				case 1:     //increase bomb range
-					player.bombRange++;
+					player.bombRange+=3;
+                    player.items[item]++;
 					break;
 
 				case 2: 	//haste
 					player.speed+= 5;
+                    player.items[item]++;
 					break;
 
 				case 4: 	//more bomb
 					player.bombLeft++;
+                    player.items[item]++;
 					break;
 			}
+
+            if (item)
+                return true;
+            else
+                return false;
 		}
 	};
 
@@ -274,10 +282,14 @@ function Session(sid) {
             states.players = {};
             for (var i = 0; i < players.length; i++) {
                 players[i].moveOneStep();
-                getItem(players[i], Math.round(players[i].x), Math.round(players[i].y));
+
+                if (getItem(players[i], Math.round(players[i].x), Math.round(players[i].y)))
+                    sendUpdate = true;
+
                 states.players[players[i].id] = {
                 	x: players[i].x,
                 	y: players[i].y,
+                    items: players[i].items,
                 	bombLeft: players[i].bombLeft,
                     speed: players[i].speed,
                 	isAlive: players[i].isAlive
