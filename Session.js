@@ -25,6 +25,7 @@ function Session(sid) {
 	// 		  { x: 0, y: 2 },
 	// 		  { x: 2, y: 2 }];
     var serverTime;
+    var serverDelay;
 
 	/*
 	 * broadcast takes in a JSON structure and send it to
@@ -33,7 +34,8 @@ function Session(sid) {
 	 * e.g., broadcast({type: "abc", x: 30});
 	 */
 	var broadcast = function (msg) {
-        msg["timestamp"] = new Date().getTime();
+        var timestamp = new Date().getTime();
+        msg["timestamp"] = timestamp + getServerDelay();
 		for (var i = 0; i < players.length; i++) {
 			players[i].socket.write(JSON.stringify(msg));
 		}
@@ -46,7 +48,8 @@ function Session(sid) {
 	 * e.g., unicast(socket, {type: "abc", x: 30});
 	 */
 	var unicast = function (player, msg) {
-        msg["timestamp"] = new Date().getTime();
+        var timestamp = new Date().getTime();
+        msg["timestamp"] = timestamp + getServerDelay();
 		player.socket.write(JSON.stringify(msg));
 	};
 
@@ -156,11 +159,11 @@ function Session(sid) {
                 players[i].bombLeft++;
         }
 
+        //console.log("\n" + JSON.stringify(zooMap.cells, null, 2));
+        console.log("\n" + JSON.stringify(bomb, null, 2));
+
     	// Remove the bomb from the bombs array
     	bombs.splice(bombIdx, 1);
-
-        console.log("\n" + JSON.stringify(zooMap.cells, null, 2));
-        console.log("\n" + JSON.stringify(bomb, null, 2));
 
         //console.log(bomb);
         var up = true, down = true, left = true, right = true;
@@ -252,7 +255,14 @@ function Session(sid) {
     	return true;
     }
 
-    var simulateMove
+    var getServerDelay = function () {
+        serverDelay = players[0].delay;
+        for (var i = 1; i < players.length; i++) {
+            if (players[i].delay > serverDelay)
+                serverDelay = players[i].delay;
+        }
+        return serverDelay;
+    }
 
 	/*
 	 * private method: startGame()
@@ -322,8 +332,10 @@ function Session(sid) {
                     speed:      player.speed
                 });
                 // wait for delay
-                player.isMoving = true;
-                player.direction = msg.direction;
+                setTimeout(function(){
+                    player.isMoving = true;
+                    player.direction = msg.direction;
+                }, getServerDelay());
 				break;
 
 			case "plantBomb":
