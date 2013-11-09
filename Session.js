@@ -35,7 +35,10 @@ function Session(sid) {
 	 */
 	var broadcast = function (msg) {
         var timestamp = new Date().getTime();
-        msg["timestamp"] = timestamp + getServerDelay();
+        var serverDelay = getServerDelay();
+        msg.serverDelay = serverDelay;
+        msg.timestamp = timestamp + serverDelay;
+
 		for (var i = 0; i < players.length; i++) {
 			players[i].socket.write(JSON.stringify(msg));
 		}
@@ -49,7 +52,10 @@ function Session(sid) {
 	 */
 	var unicast = function (player, msg) {
         var timestamp = new Date().getTime();
-        msg["timestamp"] = timestamp + getServerDelay();
+        var serverDelay = getServerDelay();
+        msg.serverDelay = serverDelay;
+        msg.timestamp = timestamp + serverDelay;
+        
 		player.socket.write(JSON.stringify(msg));
 	};
 
