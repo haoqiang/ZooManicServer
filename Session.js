@@ -161,7 +161,7 @@ function Session(sid) {
 	// Kill any the player if he/she at the position x, y
 	var killPlayer = function (x, y) {
 		for (var i = 0; i < players.length; i++) {
-			if (players[i].isAlive && (players[i].x > x-0.5 || players[i].x < x+0.5) && (players[i].y > y-0.5 || players[i].y < y+0.5)){
+			if (players[i].isAlive && (players[i].x > x-0.5 && players[i].x < x+0.5) && (players[i].y > y-0.5 && players[i].y < y+0.5)){
 				console.log("player "+players[i].id+" is killed!");
 				players[i].isAlive = false;
 			}
@@ -270,19 +270,18 @@ function Session(sid) {
             // put players position inside the message
             states.players = {};
             for (var i = 0; i < players.length; i++) {
-                if (players[i].isAlive == false)
-                    deadCount++;
-                
-                players[i].moveOneStep();
+
+                            players[i].moveOneStep();
                 states.players[players[i].id] = {
                 	x: players[i].x,
                 	y: players[i].y,
                 	bombLeft: players[i].bombLeft,
                 	isAlive: players[i].isAlive
                 };
-	            if(!players[i].isAlive){
+
+	            if(!players[i].isAlive)
 		            deadCount++;
-	            }
+	            
             }
 
 			// put the map inside the message
