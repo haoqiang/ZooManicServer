@@ -87,10 +87,13 @@ function Session(sid) {
 		zooMap.cells[x][y].hasBomb = true;
 	};
 
-	var bombExplode = function (bomb, bombIdx) {
+	var bombExplode = function (bomb, bombIdx, states) {
+		if(states!==undefined){
+			states.bombs.exploded.push({x: bombs[bombIdx].x, y: bombs[bombIdx].y});
+		}
 		// Update the cell that has the bomb that the bomb exploded
 		zooMap.cells[bomb.x][bomb.y].hasBomb = false;
-		console.log("\n" + JSON.stringify(bombs, null, 2));
+		//console.log("\n" + JSON.stringify(bombs, null, 2));
 
 		// increase the bombLeft of the player
 		for (var i = 0; i < players.length; i++) {
@@ -99,7 +102,7 @@ function Session(sid) {
 		}
 
 		//console.log("\n" + JSON.stringify(zooMap.cells, null, 2));
-		console.log("\n" + JSON.stringify(bomb, null, 2));
+		//console.log("\n" + JSON.stringify(bomb, null, 2));
 
 		// Remove the bomb from the bombs array
 		//bombs.splice(bombIdx, 1);
@@ -112,7 +115,7 @@ function Session(sid) {
 			// if bomb explode upward
 			if (up && bomb.y+i < Zoo.ZOO_HEIGHT && zooMap.cells[bomb.x][bomb.y+i].type != 2) {
 				zooMap.cells[bomb.x][bomb.y+i].type = 0;
-				explodeOtherBomb(bomb.x, bomb.y+i);
+				explodeOtherBomb(bomb.x, bomb.y+i, states);
 				killPlayer(bomb.x, bomb.y+i);
 			} else {
 				up = false;
@@ -120,7 +123,7 @@ function Session(sid) {
 
 			if (down && bomb.y-i > 0 && zooMap.cells[bomb.x][bomb.y-i].type != 2) {
 				zooMap.cells[bomb.x][bomb.y-i].type = 0;
-				explodeOtherBomb(bomb.x, bomb.y-i);
+				explodeOtherBomb(bomb.x, bomb.y-i, states);
 				killPlayer(bomb.x, bomb.y-i);
 			} else {
 				down = false;
@@ -128,7 +131,7 @@ function Session(sid) {
 
 			if (left && bomb.x-i > 0 && zooMap.cells[bomb.x-i][bomb.y].type != 2) {
 				zooMap.cells[bomb.x-i][bomb.y].type = 0;
-				explodeOtherBomb(bomb.x-i, bomb.y);
+				explodeOtherBomb(bomb.x-i, bomb.y, states);
 				killPlayer(bomb.x-i, bomb.y);
 			} else {
 				left = false;
@@ -136,7 +139,7 @@ function Session(sid) {
 
 			if (right && bomb.x+i < Zoo.ZOO_WIDTH && zooMap.cells[bomb.x+i][bomb.y].type != 2) {
 				zooMap.cells[bomb.x+i][bomb.y].type = 0;
-				explodeOtherBomb(bomb.x+i, bomb.y);
+				explodeOtherBomb(bomb.x+i, bomb.y, states);
 				killPlayer(bomb.x+i, bomb.y);
 			} else {
 				right = false;
@@ -145,21 +148,23 @@ function Session(sid) {
 	};
 
 	// Explode the bomb at x, y if there is any
-	var explodeOtherBomb = function (x, y) {
+	var explodeOtherBomb = function (x, y, states) {
 		if (zooMap.cells[x][y].hasBomb == false)
 			return;
 
 		for (var i = 0; i < bombs.length; i++) {
 			if (bombs[i]!==undefined && bombs[i].x == x && bombs[i].y == y)
-				bombExplode(bombs[i], i);
+				bombExplode(bombs[i], i, states);
 		}
 	};
 
 	// Kill any the player if he/she at the position x, y
 	var killPlayer = function (x, y) {
 		for (var i = 0; i < players.length; i++) {
-			if ((players[i].x > x-0.5 || players[i].x < x+0.5) && (players[i].y > y-0.5 || players[i].y < y+0.5))
+			if (players[i].isAlive && (players[i].x > x-0.5 || players[i].x < x+0.5) && (players[i].y > y-0.5 || players[i].y < y+0.5)){
+				console.log("player "+players[i].id+" is killed!");
 				players[i].isAlive = false;
+			}
 		}
 	};
 
@@ -248,10 +253,10 @@ function Session(sid) {
             states.bombs.active = [];
             for (var i = 0; i < bombs.length; i++) {
                 if (bombs[i] !== undefined && bombs[i].isExploded()) {
-                    console.log(bombs[i]);
+                    //console.log(bombs[i]);
 
-                    states.bombs.exploded.push({x: bombs[i].x, y: bombs[i].y});
-                    bombExplode(bombs[i], i);
+
+                    bombExplode(bombs[i], i, states);
 
                     sendUpdate = true;
                     // remove the bomb from the array
@@ -272,6 +277,9 @@ function Session(sid) {
                 	bombLeft: players[i].bombLeft,
                 	isAlive: players[i].isAlive
                 };
+	            if(!players[i].isAlive){
+		            deadCount++;
+	            }
             }
 
 			// put the map inside the message

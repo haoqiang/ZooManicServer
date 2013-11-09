@@ -14,6 +14,7 @@ function TestClient(id, shouldPrint) {
 	this.delay = 0;
 	this.localTime = 0;
 	this.serverTime = 0;
+	this.gameClock = 0;
 	this.subjectId = id;
 	this.playerList = {};
 	this.shouldPrint = shouldPrint;
@@ -41,9 +42,10 @@ function TestClient(id, shouldPrint) {
 			socket.onmessage = function (e) {
 				var message = JSON.parse(e.data);
 
-				if (message.type !== "ping" && message.type !== "update") {
+				if (message.type !== "ping" && message.type !== "") {
 					//$("#output").prepend("<hr>incoming:<br><pre>"+JSON.stringify(message, null, 4)+"</pre>");
 					if (that.shouldPrint) {
+						message.zooMap = undefined;
 						console.log("[" + playerId + "] incoming:" + JSON.stringify(message, null, 4));
 					}
 				}
@@ -84,22 +86,21 @@ function TestClient(id, shouldPrint) {
 								if (key + "" === playerId + "") {
 									that.x = players[key].x;
 									that.y = players[key].y;
-									if (!players[key].isAlive && key !== playerId) {
-										socket.close();
+									if (!players[key].isAlive && players[key].id === playerId) {
 										$("#output").prepend("<h3>Player "+playerId+" is killed!</h3>");
+										socket.close();
 									}
 								}
+								that.gameClock = message.timestamp - that.serverTime;
 								var delay = ((message.timestamp - that.serverTime) - (new Date().getTime() - that.localTime)) - message.serverDelay;
 								if(delay > 0){
 									that.delay = delay;
 								}
-
 //								if (that.shouldPrint) {
 //									console.log("[" + playerId + "] server game clock: " + (message.timestamp - that.serverTime));
 //									console.log("[" + playerId + "] local game clock: " + (new Date().getTime() - that.localTime));
 //									console.log("[" + playerId + "] delay: " + ((message.timestamp - that.serverTime) - (new Date().getTime() - that.localTime)));
 //								}
-
 							}
 						}
 						that.refresh();
@@ -128,10 +129,6 @@ function TestClient(id, shouldPrint) {
 		});
 	}
 
-	this.move = function (dir) {
-		this.sendToServer({type: "move", cellX: this.x, cellY: this.y, direction: dir});
-	}
-
 	this.start = function () {
 
 		// Initialize network and GUI
@@ -146,21 +143,18 @@ function TestClient(id, shouldPrint) {
 	}
 }
 
-var interval = 300;
-
-
-
+var interval = 600;
 var textColor = ["red", "green", "orange", "blue"];
 
 
-var testMove = ["UP RIGHT UP RIGHT UP RIGHT",
-                "UP LEFT UP LEFT UP LEFT",
-                "DOWN RIGHT DOWN RIGHT DOWN RIGHT",
-                "DOWN LEFT DOWN LEFT DOWN LEFT"];
-//var testMove = ["RIGHT BOMB RIGHT BOMB RIGHT BOMB UP",
-//                "",
-//                "",
-//                ""];
+//var testMove = ["UP RIGHT UP RIGHT UP RIGHT",
+//                "UP LEFT UP LEFT UP LEFT",
+//                "DOWN RIGHT DOWN RIGHT DOWN RIGHT",
+//                "DOWN LEFT DOWN LEFT DOWN LEFT"];
+var testMove = ["RIGHT BOMB RIGHT BOMB RIGHT BOMB UP",
+                "",
+                "",
+                ""];
 
 
 var testSubject = [];
@@ -296,12 +290,21 @@ function automatedTestFor(subjectId, initialDelay, moveSequence) {
 
 	for (var i = 0; i < moveSequence.length; i++) {
 		var dir = moveSequence[i];
-		setTimeout(function (dir, i) {
-			console.log(dir);
+		console.log(delay);
+		setTimeout(function (dir) {
 			if(dir === "BOMB"){
-				testSubject[subjectId].sendToServer({type: "plantBomb", x: testSubject[subjectId].x, y: testSubject[subjectId].y});
-			} else {
-				testSubject[subjectId].move(dir);
+				testSubject[subjectId].sendToServer({
+					type: "plantBomb",
+					x: testSubject[subjectId].x,
+					y: testSubject[subjectId].y});
+				console.log("["+subjectId+"]"+" plantBomb at " + testSubject[subjectId].gameClock);
+			} else if(dir === "UP" || dir === "DOWN" || dir === "LEFT" || dir === "RIGHT"){
+				testSubject[subjectId].sendToServer({
+					type: "move",
+					cellX: testSubject[subjectId].x,
+					cellY: testSubject[subjectId].y,
+					direction: dir});
+				console.log("["+subjectId+"]"+" move "+dir+" from ("+testSubject[subjectId].x+","+testSubject[subjectId].y+") at " + testSubject[subjectId].gameClock);
 			}
 		}, delay, dir);
 		delay += interval;
