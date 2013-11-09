@@ -115,7 +115,11 @@ function Server() {
 					if (message.type === "newPlayer") {
 						playerId = new Date().getTime();
 						var playerName = message.playerName;
-						players[playerId] = new Player(playerId, playerName, conn);
+						if( message.secret === Zoo.SECRET_KEY){
+							players[playerId] = new Player(playerId, playerName, conn, "test");
+						} else {
+							players[playerId] = new Player(playerId, playerName, conn, "player");
+						}
 
 						//	return player id
 						unicast(conn, {type: "newPlayerReply", status: 0, playerId: playerId});

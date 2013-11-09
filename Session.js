@@ -34,13 +34,32 @@ function Session(sid) {
 	 * e.g., broadcast({type: "abc", x: 30});
 	 */
 	var broadcast = function (msg) {
-        var timestamp = new Date().getTime();
-        var serverDelay = getServerDelay();
-        msg.serverDelay = serverDelay;
-        msg.timestamp = timestamp + serverDelay;
+		var timestamp = new Date().getTime();
+		var serverDelay = getServerDelay();
+		msg.serverDelay = serverDelay;
+		msg.timestamp = timestamp + serverDelay;
 
 		for (var i = 0; i < players.length; i++) {
 			players[i].socket.write(JSON.stringify(msg));
+		}
+	};
+
+	/*
+	 * broadcast takes in a JSON structure and send it to
+	 * all players.
+	 *
+	 * e.g., broadcast({type: "abc", x: 30});
+	 */
+	var testcast = function (msg) {
+		var timestamp = new Date().getTime();
+		var serverDelay = getServerDelay();
+		msg.serverDelay = serverDelay;
+		msg.timestamp = timestamp + serverDelay;
+
+		for (var i = 0; i < players.length; i++) {
+			if(players[i].type === "test"){
+				players[i].socket.write(JSON.stringify(msg));
+			}
 		}
 	};
 
@@ -255,8 +274,22 @@ function Session(sid) {
                 };
             }
 
-            if (sendUpdate) 
-                broadcast(states);
+			// put the map inside the message
+			states.zooMap = {};
+			var count = 0;
+			for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
+			     for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
+			         states.zooMap[count] = { tile_type: zooMap.cells[x][y].type,
+			             item: zooMap.cells[x][y].item, x: x, y: y};
+			         count ++;
+			     }
+			}
+
+			if (sendUpdate){
+	            broadcast(states);
+            } else{
+	            testcast(states);
+            }
 
             if (deadCount >= 3)
                 gameEnd = true;

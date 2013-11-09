@@ -1,12 +1,13 @@
 "use strict";
 
-function Player(id, name, socket) {
+function Player(id, name, socket, type) {
 
 	//
 	//	Constructor
 	//
 	this.id = id;
 	this.name = name;
+	this.type = type;
 	this.delay;
 	this.lastPing;
 	this.socket = socket; // May change along playing

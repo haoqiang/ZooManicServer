@@ -141,7 +141,7 @@ function TestClient(id, shouldPrint) {
 			delay = 1000;
 		}
 		setTimeout(function () {
-			that.sendToServer({type: "newPlayer", playerName: "TestPlayer-" + Math.floor((Math.random() * 10)) });
+			that.sendToServer({type: "newPlayer", playerName: "TestPlayer-" + Math.floor((Math.random() * 10)), secret: Zoo.SECRET_KEY });
 		}, delay + 10 * that.subjectId);
 	}
 }
