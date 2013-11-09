@@ -138,7 +138,7 @@ function Session(sid) {
 			//	console.log("Broadcast to client: "+JSON.stringify(states)+"\r\n");
 			//}
 
-            if (sendUpdate)
+            if (sendUpdate) 
                 broadcast(states);
 
             if (deadCount >= 3)
@@ -295,10 +295,21 @@ function Session(sid) {
                 players[i].spawnY = players[i].y;
             }
 
+            // Get ZooMap
+            var zooState = {};
+            var count = 0;
+            for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
+                for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
+                    zooState[count] = { tile_type: zooMap.cells[x][y].type,
+                        item: zooMap.cells[x][y].item, x: x, y: y};
+                    count ++;
+                }
+            }
+
 			serverTime = new Date().getTime();
 
             console.log("Session state:\n" + JSON.stringify(that.getState(), null, 2))
-            broadcast({type:"start", content: that.getState().players, startTime: serverTime});
+            broadcast({type:"start", content: that.getState().players, startTime: serverTime, zooMap: zooState});
 
 
             gameEnd = false;
