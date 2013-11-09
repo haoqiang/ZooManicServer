@@ -5,7 +5,6 @@ function Session(sid) {
 
 	this.sid = sid;    // session id
 
-    var startOfSession = true;
 
 	var that = this;
 	var players = [];  // player list
@@ -36,9 +35,7 @@ function Session(sid) {
 	 */
 	var broadcast = function (msg) {
         var timestamp = new Date().getTime();
-		var serverDelay = getServerDelay();
-		msg.serverDelay = serverDelay;
-		msg.timestamp = timestamp + serverDelay;
+        msg["timestamp"] = timestamp + getServerDelay();
 		for (var i = 0; i < players.length; i++) {
 			players[i].socket.write(JSON.stringify(msg));
 		}
@@ -52,9 +49,7 @@ function Session(sid) {
 	 */
 	var unicast = function (player, msg) {
         var timestamp = new Date().getTime();
-		var serverDelay = getServerDelay();
-		msg.serverDelay = serverDelay;
-		msg.timestamp = timestamp + serverDelay;
+        msg["timestamp"] = timestamp + getServerDelay();
 		player.socket.write(JSON.stringify(msg));
 	};
 
@@ -75,7 +70,7 @@ function Session(sid) {
             for(var i =0; i < players.plength; i++){
                 players[i] = null;
             }
-            //players = [];
+            player = [];
 		}
 		console.log("Session " + that.sid + " has just ended!");
 	};
@@ -143,13 +138,11 @@ function Session(sid) {
 			//	console.log("Broadcast to client: "+JSON.stringify(states)+"\r\n");
 			//}
 
-            if (sendUpdate || startOfSession) 
+            if (sendUpdate) 
                 broadcast(states);
 
             if (deadCount >= 3)
                 gameEnd = true;
-
-            startOfSession = false;
 		} else {
 			reset();
 		}
@@ -171,7 +164,7 @@ function Session(sid) {
 
         // increase the bombLeft of the player
         for (var i = 0; i < players.length; i++) {
-            if (bombs[i] !== undefined && players[i].id == bombs[i].playerId)
+            if (bombs[i] !== undefined && players[i].id == bombs[bombIdx].playerId)
                 players[i].bombLeft++;
         }
 
@@ -273,11 +266,10 @@ function Session(sid) {
     }
 
     var getServerDelay = function () {
-	    serverDelay = 0;
-        for (var i = 0; i < players.length; i++) {
-            if (players[i].delay >= serverDelay){
-	            serverDelay = players[i].delay;
-            }
+        serverDelay = players[0].delay;
+        for (var i = 1; i < players.length; i++) {
+            if (players[i].delay > serverDelay)
+                serverDelay = players[i].delay;
         }
         return serverDelay;
     }
@@ -303,10 +295,21 @@ function Session(sid) {
                 players[i].spawnY = players[i].y;
             }
 
+            // Get ZooMap
+            var zooState = {};
+            var count = 0;
+            for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
+                for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
+                    zooState[count] = { tile_type: zooMap.cells[x][y].type,
+                        item: zooMap.cells[x][y].item, x: x, y: y};
+                    count ++;
+                }
+            }
+
 			serverTime = new Date().getTime();
 
             console.log("Session state:\n" + JSON.stringify(that.getState(), null, 2))
-            broadcast({type:"start", content: that.getState().players, startTime: serverTime});
+            broadcast({type:"start", content: that.getState().players, startTime: serverTime, zooMap: zooState});
 
 
             gameEnd = false;
