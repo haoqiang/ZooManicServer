@@ -84,6 +84,9 @@ function Session(sid) {
 	 */
 	var gameLoop = function () {
 		if (!gameEnd) {
+            var deadCount = 0;
+            var sendUpdate = false;
+
 			var states = {};
             states["type"] = "update";
 
@@ -93,16 +96,17 @@ function Session(sid) {
             states.bombs.exploded = [];
             states.bombs.active = [];
             for (var i = 0; i < bombs.length; i++) {
-                if (bombs[i].isExploded()) {
+                if (bombs[i] !== undefined && bombs[i].isExploded()) {
                     console.log(bombs[i]);
 
                     states.bombs.exploded.push({x: bombs[i].x, y: bombs[i].y});
                     bombExplode(bombs[i], i);
 
+                    sendUpdate = true;
                     // remove the bomb from the array
                     //bombs.splice(i, 1);
                     //console.log(bombs[i]);
-                } else {
+                } else if (bombs[i] !== undefined) {
                     states.bombs.active.push({x: bombs[i].x, y: bombs[i].y});
                 }
             }
@@ -134,7 +138,11 @@ function Session(sid) {
 			//	console.log("Broadcast to client: "+JSON.stringify(states)+"\r\n");
 			//}
 
-            broadcast(states);
+            if (sendUpdate)
+                broadcast(states);
+
+            if (deadCount >= 3)
+                gameEnd = true;
 		} else {
 			reset();
 		}
@@ -164,7 +172,8 @@ function Session(sid) {
         console.log("\n" + JSON.stringify(bomb, null, 2));
 
     	// Remove the bomb from the bombs array
-    	bombs.splice(bombIdx, 1);
+    	//bombs.splice(bombIdx, 1);
+        bombs[bombIdx] = undefined;
 
 
         var up = true, down = true, left = true, right = true;
@@ -340,6 +349,13 @@ function Session(sid) {
 				break;
 
 			case "plantBomb":
+                broadcast({
+                    type: "plantBombReply",
+                    playerId: player.id,
+                    bombX: msg.x,
+                    bombY: msg.y
+                });
+
                 setTimeout(function(){
                     plantBomb(player, Math.round(msg.x), Math.round(msg.y));
                 }, getServerDelay());                
