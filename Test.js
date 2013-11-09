@@ -41,7 +41,7 @@ function TestClient(id, shouldPrint) {
 			socket.onmessage = function (e) {
 				var message = JSON.parse(e.data);
 
-				if (message.type !== "ping" && message.type !== "") {
+				if (message.type !== "ping" && message.type !== "update") {
 					//$("#output").prepend("<hr>incoming:<br><pre>"+JSON.stringify(message, null, 4)+"</pre>");
 					if (that.shouldPrint) {
 						console.log("[" + playerId + "] incoming:" + JSON.stringify(message, null, 4));

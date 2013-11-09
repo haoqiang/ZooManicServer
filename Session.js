@@ -46,7 +46,7 @@ function Session(sid) {
 
 	/*
 	 * broadcast takes in a JSON structure and send it to
-	 * all players.
+	 * all test players.
 	 *
 	 * e.g., broadcast({type: "abc", x: 30});
 	 */

@@ -62,12 +62,12 @@ function Server() {
 	//      and most importantly check if user is
 	//      still connected
 	//
-	var pingInterval = 5000;
+	var pingInterval = 50000;
 	var updateDelay = function (playerId) {
 		if (playerId === undefined) {
 			for (var key in players) {
 				if (players.hasOwnProperty(key)) {
-					if (new Date().getTime() - players[key].lastPing > pingInterval * 15) {
+					if (new Date().getTime() - players[key].lastPing > pingInterval * 10) {
 						delete players[key];
 						console.log("Player " + key + " removed due to no responding in " + (pingInterval * 15)/1000 + "s.");
 					}
