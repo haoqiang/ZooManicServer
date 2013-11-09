@@ -59,7 +59,7 @@ function TestClient(id, shouldPrint) {
 						that.sendToServer(message);
 						break;
 					case "start":
-						that.serverTime = message.timestamp;
+						that.serverTime = message.startTime;
 						that.localTime = new Date().getTime();
 						for (var i = 0; i < message.content.length; i++) {
 							var currentId = message.content[i].id;

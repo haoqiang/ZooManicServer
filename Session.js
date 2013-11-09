@@ -70,7 +70,7 @@ function Session(sid) {
             for(var i =0; i < players.plength; i++){
                 players[i] = null;
             }
-            player = [];
+            //players = [];
 		}
 		console.log("Session " + that.sid + " has just ended!");
 	};
@@ -137,6 +137,10 @@ function Session(sid) {
 			//if(counter_debug == 1){
 			//	console.log("Broadcast to client: "+JSON.stringify(states)+"\r\n");
 			//}
+
+
+			broadcast(states);
+
 
             if (sendUpdate)
                 broadcast(states);
@@ -266,10 +270,11 @@ function Session(sid) {
     }
 
     var getServerDelay = function () {
-        serverDelay = players[0].delay;
-        for (var i = 1; i < players.length; i++) {
-            if (players[i].delay > serverDelay)
-                serverDelay = players[i].delay;
+	    serverDelay = 0;
+        for (var i = 0; i < players.length; i++) {
+            if (players[i].delay >= serverDelay){
+	            serverDelay = players[i].delay;
+            }
         }
         return serverDelay;
     }
