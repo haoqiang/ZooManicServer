@@ -33,7 +33,7 @@ function Session(sid) {
 	 * e.g., broadcast({type: "abc", x: 30});
 	 */
 	var broadcast = function (msg) {
-        //msg["timestamp"] = new Date().getTime();
+        msg["timestamp"] = new Date().getTime();
 		for (var i = 0; i < players.length; i++) {
 			players[i].socket.write(JSON.stringify(msg));
 		}
@@ -46,7 +46,7 @@ function Session(sid) {
 	 * e.g., unicast(socket, {type: "abc", x: 30});
 	 */
 	var unicast = function (player, msg) {
-        //msg["timestamp"] = new Date().getTime();
+        msg["timestamp"] = new Date().getTime();
 		player.socket.write(JSON.stringify(msg));
 	};
 
@@ -138,7 +138,7 @@ function Session(sid) {
 	};
 
     var plantBomb = function (player, x, y) {
-        var newBomb = new Bomb(player.avatarId, player.id, x, y);
+        var newBomb = new Bomb(player.avatarId, player.id, x, y, player.bombRange);
         bombs.push(newBomb);
         player.bombLeft--;
 
@@ -228,6 +228,10 @@ function Session(sid) {
     		zooMap.cells[x][y].item = 0;
 
     		switch(item) {
+                case 1:     //increase bomb range
+                    player.bombRange++;
+                    break;
+
     			case 2: 	//haste
     				player.speed+= 5;
     				break;
