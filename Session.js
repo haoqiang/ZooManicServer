@@ -265,6 +265,9 @@ function Session(sid) {
             // put players position inside the message
             states.players = {};
             for (var i = 0; i < players.length; i++) {
+                if (players[i].isAlive == false)
+                    deadCount++;
+                
                 players[i].moveOneStep();
                 states.players[players[i].id] = {
                 	x: players[i].x,
