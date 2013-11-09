@@ -79,6 +79,9 @@ function Session(sid) {
 	};
 
 	var plantBomb = function (player, x, y) {
+        if (!player.bombLeft)
+            return;
+
 		var newBomb = new Bomb(player.avatarId, player.id, x, y, player.bombRange);
 		bombs.push(newBomb);
 		player.bombLeft--;
@@ -89,7 +92,7 @@ function Session(sid) {
 
 	var bombExplode = function (bomb, bombIdx, states) {
 		if(states!==undefined){
-			states.bombs.exploded.push({x: bombs[bombIdx].x, y: bombs[bombIdx].y});
+			states.bombs.exploded.push({x: bombs[bombIdx].x, y: bombs[bombIdx].y, playerId: bombs[bombIdx].playerId});
 		}
 		// Update the cell that has the bomb that the bomb exploded
 		zooMap.cells[bomb.x][bomb.y].hasBomb = false;
@@ -270,12 +273,13 @@ function Session(sid) {
             // put players position inside the message
             states.players = {};
             for (var i = 0; i < players.length; i++) {
-
-                            players[i].moveOneStep();
+                players[i].moveOneStep();
+                getItem(players[i], Math.round(players[i].x), Math.round(players[i].y));
                 states.players[players[i].id] = {
                 	x: players[i].x,
                 	y: players[i].y,
                 	bombLeft: players[i].bombLeft,
+                    speed: players[i].speed,
                 	isAlive: players[i].isAlive
                 };
 
