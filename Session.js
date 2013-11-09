@@ -25,6 +25,7 @@ function Session(sid) {
 	 		  { x: 0, y: 2 },
 	 		  { x: 2, y: 2 }];
     var serverTime;
+    var serverDelay;
 
 	/*
 	 * broadcast takes in a JSON structure and send it to
@@ -33,7 +34,8 @@ function Session(sid) {
 	 * e.g., broadcast({type: "abc", x: 30});
 	 */
 	var broadcast = function (msg) {
-        msg["timestamp"] = new Date().getTime();
+        var timestamp = new Date().getTime();
+        msg["timestamp"] = timestamp + getServerDelay();
 		for (var i = 0; i < players.length; i++) {
 			players[i].socket.write(JSON.stringify(msg));
 		}
@@ -46,7 +48,8 @@ function Session(sid) {
 	 * e.g., unicast(socket, {type: "abc", x: 30});
 	 */
 	var unicast = function (player, msg) {
-        msg["timestamp"] = new Date().getTime();
+        var timestamp = new Date().getTime();
+        msg["timestamp"] = timestamp + getServerDelay();
 		player.socket.write(JSON.stringify(msg));
 	};
 
@@ -149,20 +152,21 @@ function Session(sid) {
     var bombExplode = function (bomb, bombIdx) {
     	// Update the cell that has the bomb that the bomb exploded
     	zooMap.cells[bomb.x][bomb.y].hasBomb = false;
+        console.log("\n" + JSON.stringify(bombs, null, 2));
 
         // increase the bombLeft of the player
         for (var i = 0; i < players.length; i++) {
-            if (players[i].id == bombs[i].playerId)
+            if (bombs[i] !== undefined && players[i].id == bombs[i].playerId)
                 players[i].bombLeft++;
         }
+
+        //console.log("\n" + JSON.stringify(zooMap.cells, null, 2));
+        console.log("\n" + JSON.stringify(bomb, null, 2));
 
     	// Remove the bomb from the bombs array
     	bombs.splice(bombIdx, 1);
 
-        console.log("\n" + JSON.stringify(zooMap.cells, null, 2));
-        console.log("\n" + JSON.stringify(bomb, null, 2));
 
-        //console.log(bomb);
         var up = true, down = true, left = true, right = true;
 
         for (var i = 1; i <= bomb.range; i++) {
@@ -170,7 +174,7 @@ function Session(sid) {
             if (up && bomb.y+i < Zoo.ZOO_HEIGHT && zooMap.cells[bomb.x][bomb.y+i].type != 2) {
                 zooMap.cells[bomb.x][bomb.y+i].type = 0;
                 explodeOtherBomb(bomb.x, bomb.y+i);
-                killPlayer(bomb.x, bomb.y+i);                    
+                killPlayer(bomb.x, bomb.y+i);
             } else {
             	up = false;
             }
@@ -178,7 +182,7 @@ function Session(sid) {
             if (down && bomb.y-i > 0 && zooMap.cells[bomb.x][bomb.y-i].type != 2) {
                 zooMap.cells[bomb.x][bomb.y-i].type = 0;
                 explodeOtherBomb(bomb.x, bomb.y-i);
-                killPlayer(bomb.x, bomb.y-i);                    
+                killPlayer(bomb.x, bomb.y-i);
             } else {
             	down = false;
             }
@@ -186,7 +190,7 @@ function Session(sid) {
             if (left && bomb.x-i > 0 && zooMap.cells[bomb.x-i][bomb.y].type != 2) {
                 zooMap.cells[bomb.x-i][bomb.y].type = 0;
                 explodeOtherBomb(bomb.x-i, bomb.y);
-                killPlayer(bomb.x-i, bomb.y);                    
+                killPlayer(bomb.x-i, bomb.y);
             } else {
             	left = false;
             }
@@ -194,7 +198,7 @@ function Session(sid) {
             if (right && bomb.x+i < Zoo.ZOO_WIDTH && zooMap.cells[bomb.x+i][bomb.y].type != 2) {
                 zooMap.cells[bomb.x+i][bomb.y].type = 0;
                 explodeOtherBomb(bomb.x+i, bomb.y);
-                killPlayer(bomb.x+i, bomb.y);                    
+                killPlayer(bomb.x+i, bomb.y);
             } else {
             	right = false;
             }
@@ -252,7 +256,14 @@ function Session(sid) {
     	return true;
     }
 
-    var simulateMove
+    var getServerDelay = function () {
+        serverDelay = players[0].delay;
+        for (var i = 1; i < players.length; i++) {
+            if (players[i].delay > serverDelay)
+                serverDelay = players[i].delay;
+        }
+        return serverDelay;
+    }
 
 	/*
 	 * private method: startGame()
@@ -322,8 +333,10 @@ function Session(sid) {
                     speed:      player.speed
                 });
                 // wait for delay
-                player.isMoving = true;
-                player.direction = msg.direction;
+                setTimeout(function(){
+                    player.isMoving = true;
+                    player.direction = msg.direction;
+                }, getServerDelay());
 				break;
 
 			case "plantBomb":
