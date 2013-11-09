@@ -38,6 +38,7 @@ function TestClient(id) {
 
 				if(message.type!=="ping"){
 					//$("#output").prepend("<hr>incoming:<br><pre>"+JSON.stringify(message, null, 4)+"</pre>");
+					console.log("incoming:"+JSON.stringify(message, null, 4));
 				}
 
 				switch(message.type){
