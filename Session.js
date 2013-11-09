@@ -15,15 +15,15 @@ function Session(sid) {
 	var gameEnd = true;
 	var counter_debug = 0;
 
-    /*var startPoint = [{ x: 0,               y: 0 },
+    var startPoint = [{ x: 0,               y: 0 },
                       { x: Zoo.ZOO_WIDTH-1, y: 0 },
                       { x: 0,               y: Zoo.ZOO_HEIGHT-1 },
                       { x: Zoo.ZOO_WIDTH-1, y: Zoo.ZOO_HEIGHT-1 }];
-	*/
-	 var startPoint = [{ x: 0, y: 0 },
-	 		  { x: 1, y: 0 },
-	 		  { x: 0, y: 2 },
-	 		  { x: 2, y: 2 }];
+	
+	 // var startPoint = [{ x: 0, y: 0 },
+	 // 		  { x: 1, y: 0 },
+	 // 		  { x: 0, y: 2 },
+	 // 		  { x: 2, y: 2 }];
     var serverTime;
     var serverDelay;
 
@@ -120,15 +120,15 @@ function Session(sid) {
             }
 
             // put the map inside the message
-             states.zooMap = {};
-             var count = 0;
-             for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
-                 for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
-                     states.zooMap[count] = { tile_type: zooMap.cells[x][y].type,
-                         item: zooMap.cells[x][y].item, x: x, y: y};
-                     count ++;
-                 }
-             }
+            // states.zooMap = {};
+            // var count = 0;
+            // for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
+            //     for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
+            //         states.zooMap[count] = { tile_type: zooMap.cells[x][y].type,
+            //             item: zooMap.cells[x][y].item, x: x, y: y};
+            //         count ++;
+            //     }
+            // }
 			//counter_debug++
 			//if(counter_debug == 1){
 			//	console.log("Broadcast to client: "+JSON.stringify(states)+"\r\n");
@@ -289,7 +289,7 @@ function Session(sid) {
 			serverTime = new Date().getTime();
 
             console.log("Session state:\n" + JSON.stringify(that.getState(), null, 2))
-            broadcast({type:"start", content: that.getState().players, timestamp: serverTime});
+            broadcast({type:"start", content: that.getState().players, startTime: serverTime});
 
 
             gameEnd = false;
@@ -340,7 +340,9 @@ function Session(sid) {
 				break;
 
 			case "plantBomb":
-                plantBomb(player, Math.round(msg.x), Math.round(msg.y));
+                setTimeout(function(){
+                    plantBomb(player, Math.round(msg.x), Math.round(msg.y));
+                }, getServerDelay());                
 				console.log(msg);
 				break;
 
