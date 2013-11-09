@@ -152,10 +152,11 @@ function Session(sid) {
     var bombExplode = function (bomb, bombIdx) {
     	// Update the cell that has the bomb that the bomb exploded
     	zooMap.cells[bomb.x][bomb.y].hasBomb = false;
+        console.log("\n" + JSON.stringify(bombs, null, 2));
 
         // increase the bombLeft of the player
         for (var i = 0; i < players.length; i++) {
-            if (players[i].id == bombs[i].playerId)
+            if (bombs[i] !== undefined && players[i].id == bombs[i].playerId)
                 players[i].bombLeft++;
         }
 
@@ -165,7 +166,7 @@ function Session(sid) {
     	// Remove the bomb from the bombs array
     	bombs.splice(bombIdx, 1);
 
-        //console.log(bomb);
+
         var up = true, down = true, left = true, right = true;
 
         for (var i = 1; i <= bomb.range; i++) {
@@ -173,7 +174,7 @@ function Session(sid) {
             if (up && bomb.y+i < Zoo.ZOO_HEIGHT && zooMap.cells[bomb.x][bomb.y+i].type != 2) {
                 zooMap.cells[bomb.x][bomb.y+i].type = 0;
                 explodeOtherBomb(bomb.x, bomb.y+i);
-                killPlayer(bomb.x, bomb.y+i);                    
+                killPlayer(bomb.x, bomb.y+i);
             } else {
             	up = false;
             }
@@ -181,7 +182,7 @@ function Session(sid) {
             if (down && bomb.y-i > 0 && zooMap.cells[bomb.x][bomb.y-i].type != 2) {
                 zooMap.cells[bomb.x][bomb.y-i].type = 0;
                 explodeOtherBomb(bomb.x, bomb.y-i);
-                killPlayer(bomb.x, bomb.y-i);                    
+                killPlayer(bomb.x, bomb.y-i);
             } else {
             	down = false;
             }
@@ -189,7 +190,7 @@ function Session(sid) {
             if (left && bomb.x-i > 0 && zooMap.cells[bomb.x-i][bomb.y].type != 2) {
                 zooMap.cells[bomb.x-i][bomb.y].type = 0;
                 explodeOtherBomb(bomb.x-i, bomb.y);
-                killPlayer(bomb.x-i, bomb.y);                    
+                killPlayer(bomb.x-i, bomb.y);
             } else {
             	left = false;
             }
@@ -197,7 +198,7 @@ function Session(sid) {
             if (right && bomb.x+i < Zoo.ZOO_WIDTH && zooMap.cells[bomb.x+i][bomb.y].type != 2) {
                 zooMap.cells[bomb.x+i][bomb.y].type = 0;
                 explodeOtherBomb(bomb.x+i, bomb.y);
-                killPlayer(bomb.x+i, bomb.y);                    
+                killPlayer(bomb.x+i, bomb.y);
             } else {
             	right = false;
             }
