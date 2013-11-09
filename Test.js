@@ -34,8 +34,8 @@ function TestClient(id, shouldPrint) {
 		// Attempts to connect to game server
 		try {
 			if (location.host !== "") {
-				socket = new SockJS("http://" + location.host + ":" + Zoo.PORT + "");
-				//socket = new SockJS("http://" + Zoo.SERVER_NAME + ":" + Zoo.PORT + "");
+				//socket = new SockJS("http://" + location.host + ":" + Zoo.PORT + "");
+				socket = new SockJS("http://" + Zoo.SERVER_NAME + ":" + Zoo.PORT + "");
 			} else {
 				socket = new SockJS("http://localhost:" + Zoo.PORT + "");
 			}
@@ -86,8 +86,8 @@ function TestClient(id, shouldPrint) {
 								if (key + "" === playerId + "") {
 									that.x = players[key].x;
 									that.y = players[key].y;
-									if (!players[key].isAlive && players[key].id === playerId) {
-										$("#output").prepend("<h3>Player "+playerId+" is killed!</h3>");
+									if (!players[key].isAlive) {
+										$("#output").prepend("<hr><h3>Player "+playerId+" is killed!</h3>");
 										socket.close();
 									}
 								}
@@ -146,12 +146,20 @@ function TestClient(id, shouldPrint) {
 var interval = 600;
 var textColor = ["red", "green", "orange", "blue"];
 
-
+//  Regression test
 //var testMove = ["UP RIGHT UP RIGHT UP RIGHT",
 //                "UP LEFT UP LEFT UP LEFT",
 //                "DOWN RIGHT DOWN RIGHT DOWN RIGHT",
 //                "DOWN LEFT DOWN LEFT DOWN LEFT"];
-var testMove = ["RIGHT BOMB RIGHT BOMB RIGHT BOMB UP",
+
+//  Concective explode test
+//var testMove = ["RIGHT BOMB RIGHT BOMB RIGHT BOMB UP",
+//                "",
+//                "",
+//                ""];
+
+//  Explode with no hit
+var testMove = ["RIGHT BOMB RIGHT BOMB",
                 "",
                 "",
                 ""];
