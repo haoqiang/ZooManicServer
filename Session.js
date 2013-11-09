@@ -5,6 +5,7 @@ function Session(sid) {
 
 	this.sid = sid;    // session id
 
+    var startOfSession = true;
 
 	var that = this;
 	var players = [];  // player list
@@ -138,11 +139,13 @@ function Session(sid) {
 			//	console.log("Broadcast to client: "+JSON.stringify(states)+"\r\n");
 			//}
 
-            if (sendUpdate) 
+            if (sendUpdate || startOfSession) 
                 broadcast(states);
 
             if (deadCount >= 3)
                 gameEnd = true;
+
+            startOfSession = false;
 		} else {
 			reset();
 		}
@@ -293,17 +296,6 @@ function Session(sid) {
                 players[i].y = startPoint[i].y;
                 players[i].spawnX = players[i].x;
                 players[i].spawnY = players[i].y;
-            }
-
-            // Get ZooMap
-            var zooState = {};
-            var count = 0;
-            for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
-                for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
-                    zooState[count] = { tile_type: zooMap.cells[x][y].type,
-                        item: zooMap.cells[x][y].item, x: x, y: y};
-                    count ++;
-                }
             }
 
 			serverTime = new Date().getTime();
