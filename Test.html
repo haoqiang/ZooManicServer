@@ -1,29 +1,34 @@
 <!DOCTYPE html>
 <html>
     <head>
-    <script src="http://cdn.sockjs.org/sockjs-0.3.min.js"> </script>
-    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-    <script type="text/javascript">
-        var global = {}; // For node.js require
-    </script>
-    <style>
-    p{
-        margin: 10px 0;
-    }
-    .id{
-        font-weight: bold;
-    }
-    </style>
+        <script src="http://cdn.sockjs.org/sockjs-0.3.min.js"></script>
+        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+        <script type="text/javascript">
+            var global = {}; // For node.js require
+        </script>
+        <style>
+            p {
+                margin: 10px 0;
+            }
+
+
+            .id {
+                font-weight: bold;
+            }
+        </style>
     </head>
     <body>
         <h1>
             Zoo test
         </h1>
+
         <p><b>Step 1: Wait the server to create a new player</b></p>
+
         <p id="newPlayer">Wait!!</p>
         <hr>
 
         <p><b>Step 2: Now you can join a game session</b></p>
+
         <p>Only use below when you see sucess message above:
             <button class="auto">Automated test (first only)</button>
             <button class="autoAll">Automated test (all)</button>
@@ -68,6 +73,7 @@
         <hr>
 
         <p><b>Step 3: See player states after start</b></p>
+
         <div id="playerInfo">
             <p class="player">Player <span class="id"></span>: Current position:
                 X: <input type="text" class="pos_x" value="0" size="5">

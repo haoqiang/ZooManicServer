@@ -1,6 +1,6 @@
 "use strict";
 
-function ZooMap () {
+function ZooMap() {
 	/* Public variables */
 	this.cells;
 
@@ -19,20 +19,16 @@ function ZooMap () {
 	 */
 	var randomType = function (x, y) {
 		/* Player's postions and adjacent cells must be empty */
-		if ( (x == 0 && y == 0) || (x == 1 && y == 0) || (x == 0 && y == 1) ) // player at top left
+		if ((x == 0 && y == 0) || (x == 1 && y == 0) || (x == 0 && y == 1)) // player at top left
 			return 0;
 
-		if ( (x == (Zoo.ZOO_WIDTH - 1) && y == 0) || (x == (Zoo.ZOO_WIDTH - 2) && y == 0) 
-			|| (x == (Zoo.ZOO_WIDTH - 1) && y == 1) ) // player at top right
+		if ((x == (Zoo.ZOO_WIDTH - 1) && y == 0) || (x == (Zoo.ZOO_WIDTH - 2) && y == 0) || (x == (Zoo.ZOO_WIDTH - 1) && y == 1)) // player at top right
 			return 0;
 
-		if ( (x == 0 && y == (Zoo.ZOO_HEIGHT - 1)) || (x == 1 && y == (Zoo.ZOO_HEIGHT - 1)) 
-			|| (x == 0 && y == (Zoo.ZOO_HEIGHT - 2)) ) // player at bottom left
-			return 0;		
+		if ((x == 0 && y == (Zoo.ZOO_HEIGHT - 1)) || (x == 1 && y == (Zoo.ZOO_HEIGHT - 1)) || (x == 0 && y == (Zoo.ZOO_HEIGHT - 2))) // player at bottom left
+			return 0;
 
-		if ( (x == (Zoo.ZOO_WIDTH - 1) && y == (Zoo.ZOO_HEIGHT - 1)) 
-			|| (x == (Zoo.ZOO_WIDTH - 2) && y == (Zoo.ZOO_HEIGHT - 1)) 
-			|| (x == (Zoo.ZOO_WIDTH - 1) && y == (Zoo.ZOO_HEIGHT - 2)) ) // player at bottom right
+		if ((x == (Zoo.ZOO_WIDTH - 1) && y == (Zoo.ZOO_HEIGHT - 1)) || (x == (Zoo.ZOO_WIDTH - 2) && y == (Zoo.ZOO_HEIGHT - 1)) || (x == (Zoo.ZOO_WIDTH - 1) && y == (Zoo.ZOO_HEIGHT - 2))) // player at bottom right
 			return 0;
 		/*** end checking player position ***/
 

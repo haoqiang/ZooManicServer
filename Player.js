@@ -42,22 +42,22 @@ function Player(id, name, socket) {
 	//
 	this.getState = function () {
 		return {
-			id        : this.id,
-			name      : this.name,
-			delay     : this.delay,
-			isAlive   : this.isAlive,
-			avatarId  : this.avatarId,
-			spawnX	  : this.spawnX,
-			spawnY	  : this.spawnY,
-			sessionId : this.sessionId
+			id       : this.id,
+			name     : this.name,
+			delay    : this.delay,
+			isAlive  : this.isAlive,
+			avatarId : this.avatarId,
+			spawnX   : this.spawnX,
+			spawnY   : this.spawnY,
+			sessionId: this.sessionId
 		}
 	}
 
-	this.getPosition = function(){
+	this.getPosition = function () {
 		return{
-			id : this.id,
-			x: this.x,
-			y: this.y,
+			id       : this.id,
+			x        : this.x,
+			y        : this.y,
 			direction: this.direction
 		}
 	}
@@ -72,7 +72,7 @@ function Player(id, name, socket) {
 		switch (this.direction) {
 			case "UP":
 				this.y += this.cellSpeed;
-				if (this.y >= Math.floor(oldPosY+1)) {		// moved to the next cell
+				if (this.y >= Math.floor(oldPosY + 1)) {		// moved to the next cell
 					this.isMoving = false;
 					this.y = Math.round(this.y);
 				}
@@ -80,7 +80,7 @@ function Player(id, name, socket) {
 
 			case "DOWN":
 				this.y -= this.cellSpeed;
-				if (this.y <= Math.ceil(oldPosY-1)) {	// moved to the next cell
+				if (this.y <= Math.ceil(oldPosY - 1)) {	// moved to the next cell
 					this.isMoving = false;
 					this.y = Math.round(this.y);
 				}
@@ -88,7 +88,7 @@ function Player(id, name, socket) {
 
 			case "LEFT":
 				this.x -= this.cellSpeed;
-				if (this.x <= Math.ceil(oldPosX-1)) {	// moved to the next cell
+				if (this.x <= Math.ceil(oldPosX - 1)) {	// moved to the next cell
 					this.isMoving = false;
 					this.x = Math.round(this.x);
 				}
@@ -96,7 +96,7 @@ function Player(id, name, socket) {
 
 			case "RIGHT":
 				this.x += this.cellSpeed;
-				if (this.x >= Math.floor(oldPosX+1)) {		// moved to the next cell
+				if (this.x >= Math.floor(oldPosX + 1)) {		// moved to the next cell
 					this.isMoving = false;
 					this.x = Math.round(this.x);
 				}

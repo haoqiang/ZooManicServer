@@ -1,6 +1,6 @@
 "use strict";
 
-function Cell (xPos, yPos, type, item) {
+function Cell(xPos, yPos, type, item) {
 	/* Public variables */
 	this.x;
 	this.y;

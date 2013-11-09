@@ -11,7 +11,7 @@ require(LIB_PATH + "Session.js");
 function Server() {
 
 	// Declare variables
-	var port = Zoo.PORT;
+	var playerCount = 0;
 	var maxGameRoomSize = 4;
 	var maxGameRoomNumber = 7;
 
@@ -20,7 +20,7 @@ function Server() {
 
 	var broadcast = function (msg) {
 		for (var id in players) {
-			if(players.hasOwnProperty(id)){
+			if (players.hasOwnProperty(id)) {
 				players[id].socket.write(JSON.stringify(msg));
 			}
 		}
@@ -42,7 +42,11 @@ function Server() {
 			}
 		}
 		return result;
-	}
+	};
+
+	//
+	//  return all players status
+	//
 	var getAllPlayerStats = function () {
 		var result = [];
 		for (var key in players) {
@@ -51,16 +55,21 @@ function Server() {
 			}
 		}
 		return result;
-	}
+	};
 
+	//
+	//  measure client delay by ping (not used in final version)
+	//      and most importantly check if user is
+	//      still connected
+	//
 	var pingInterval = 5000;
-	var updateDelay = function(playerId){
-		if( playerId === undefined ){
+	var updateDelay = function (playerId) {
+		if (playerId === undefined) {
 			for (var key in players) {
 				if (players.hasOwnProperty(key)) {
-					if (new Date().getTime() - players[key].lastPing > pingInterval * 10) {
+					if (new Date().getTime() - players[key].lastPing > pingInterval * 15) {
 						delete players[key];
-						console.log("Player " + key + " removed due to ");
+						console.log("Player " + key + " removed due to no responding in " + (pingInterval * 15)/1000 + "s.");
 					}
 				}
 			}
@@ -68,7 +77,7 @@ function Server() {
 		} else {
 			unicast(players[playerId].socket, {type: "ping", timestamp: new Date().getTime()});
 		}
-	}
+	};
 
 	this.start = function () {
 		// Set up the delay detection
@@ -81,25 +90,19 @@ function Server() {
 
 		// set event handler for socket messages
 		try {
-			var playerCount = 0;
 			var express = require('express');
 			var http = require('http');
 			var sockjs = require('sockjs');
 			var sock = sockjs.createServer();
 
-			var playerCount = 0;
-			var reconnect = true;
-
 			//new connection established
 			sock.on('connection', function (conn) {
-
 
 				/* When the client close the connection */
 				conn.on('close', function () {
 					// we don't care if player get disconnected!
 					console.log("" + conn.id + " disconnected!");
 				});
-
 
 				/* When the client send data to the server */
 				conn.on('data', function (data) {
@@ -109,7 +112,7 @@ function Server() {
 					//
 					//	check new incoming connection player id
 					//
-					if(message.type === "newPlayer"){
+					if (message.type === "newPlayer") {
 						playerId = new Date().getTime();
 						var playerName = message.playerName;
 						players[playerId] = new Player(playerId, playerName, conn);
@@ -117,20 +120,16 @@ function Server() {
 						//	return player id
 						unicast(conn, {type: "newPlayerReply", status: 0, playerId: playerId});
 
-						//  breif wait to measure the delay, because player must recieve
-						//     its id first before it can reply to ping
-						setTimeout(updateDelay, 250);
-
 						//	update total player count
 						playerCount++;
 						broadcast({type: "totalPlayerCount", totalPlayer: playerCount});
 						console.log("    Player: " + playerName + "[" + playerId + "] created.");
 					} else {
-						if(playerId === undefined || players[playerId] === undefined){
+						if (playerId === undefined || players[playerId] === undefined) {
 							unicast(conn, {type: "message", status: 1, content: "PlayerId not exist, please apply for new user again."});
 							return;
 						} else {
-							if(players[playerId].socket !== conn){
+							if (players[playerId].socket !== conn) {
 								players[playerId].socket = conn;
 								console.log("    Player: " + players[playerId].name + "[" + playerId + "] updated connection.");
 							}
@@ -177,9 +176,9 @@ function Server() {
 								unicast(conn, {type: "playerStates", content: getAllPlayerStats()});
 								break;
 							case "ping":
-								// Delay is half RTT
+								// Delay is half RTT, not used in latest part
 								var currentTime = new Date().getTime();
-								players[playerId].delay = (currentTime - message.timestamp)/2;
+								//players[playerId].delay = (currentTime - message.timestamp) / 2;
 								players[playerId].lastPing = currentTime;
 								break;
 							default:
@@ -188,6 +187,9 @@ function Server() {
 								//    to that session to handle
 								//
 								if (players[playerId].sessionId !== undefined) {
+									if(message.delay !== undefined && message.delay > 0){
+										players[playerId].delay = message.delay;
+									}
 									sessions[players[playerId].sessionId].digest(players[playerId], message);
 								} else {
 									console.log("Unhandled message." + message.type);
@@ -199,17 +201,17 @@ function Server() {
 
 			var app = express();
 			var httpServer = http.createServer(app);
-            sock.installHandlers(httpServer, {
-            	log: function(severity, message){
-	            	if(severity==="error"){
-	            		console.log("Sever eroor: " + message);
-	            	}
-	            },
-	            disconnect_delay: 600000
-	        });
+			sock.installHandlers(httpServer, {
+				log             : function (severity, message) {
+					if (severity === "error") {
+						console.log("Sever eroor: " + message);
+					}
+				},
+				disconnect_delay: 600000
+			});
 			httpServer.listen(Zoo.PORT, '0.0.0.0');
 			app.use(express.static(__dirname));
-			console.log('Listening to 0.0.0.0:'+Zoo.PORT);
+			console.log('Listening to 0.0.0.0:' + Zoo.PORT);
 		} catch (e) {
 			console.log("Error: " + e);
 		}
