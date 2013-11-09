@@ -250,7 +250,7 @@ function Session(sid) {
                 if (bombs[i] !== undefined && bombs[i].isExploded()) {
                     console.log(bombs[i]);
 
-                    states.bombs.exploded.push({x: bombs[i].x, y: bombs[i].y});
+                    states.bombs.exploded.push({x: bombs[i].x, y: bombs[i].y, playerId: bombs[i].playerId});
                     bombExplode(bombs[i], i);
 
                     sendUpdate = true;
@@ -258,7 +258,7 @@ function Session(sid) {
                     //bombs.splice(i, 1);
                     //console.log(bombs[i]);
                 } else if (bombs[i] !== undefined) {
-                    states.bombs.active.push({x: bombs[i].x, y: bombs[i].y});
+                    states.bombs.active.push({x: bombs[i].x, y: bombs[i].y, playerId: bombs[i].playerId});
                 }
             }
 
@@ -291,7 +291,7 @@ function Session(sid) {
 	            testcast(states);
             }
 
-            if (deadCount >= 3)
+            if (deadCount >= players.length - 1)
                 gameEnd = true;
 		} else {
 			reset();
