@@ -33,6 +33,7 @@ function Player(id, name, socket) {
 	this.cellSpeed = this.speed / Zoo.CELL_WIDTH / Zoo.FRAME_RATE; // cell distance per frame
 	this.bombLeft = 3;
 	this.isAlive = true;
+	this.bombRange = 3;
 	this.items = [0, 0, 0, 0, 0];
 
 

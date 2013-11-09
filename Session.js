@@ -15,15 +15,15 @@ function Session(sid) {
 	var gameEnd = true;
 	var counter_debug = 0;
 
-    var startPoint = [{ x: 0,               y: 0 },
+    /*var startPoint = [{ x: 0,               y: 0 },
                       { x: Zoo.ZOO_WIDTH-1, y: 0 },
                       { x: 0,               y: Zoo.ZOO_HEIGHT-1 },
                       { x: Zoo.ZOO_WIDTH-1, y: Zoo.ZOO_HEIGHT-1 }];
-
-	// var startPoint = [{ x: 0, y: 0 },
-	// 		  { x: 1, y: 0 },
-	// 		  { x: 0, y: 2 },
-	// 		  { x: 2, y: 2 }];
+	*/
+	 var startPoint = [{ x: 0, y: 0 },
+	 		  { x: 1, y: 0 },
+	 		  { x: 0, y: 2 },
+	 		  { x: 2, y: 2 }];
     var serverTime;
 
 	/*
@@ -33,7 +33,7 @@ function Session(sid) {
 	 * e.g., broadcast({type: "abc", x: 30});
 	 */
 	var broadcast = function (msg) {
-        //msg["timestamp"] = new Date().getTime();
+        msg["timestamp"] = new Date().getTime();
 		for (var i = 0; i < players.length; i++) {
 			players[i].socket.write(JSON.stringify(msg));
 		}
@@ -46,7 +46,7 @@ function Session(sid) {
 	 * e.g., unicast(socket, {type: "abc", x: 30});
 	 */
 	var unicast = function (player, msg) {
-        //msg["timestamp"] = new Date().getTime();
+        msg["timestamp"] = new Date().getTime();
 		player.socket.write(JSON.stringify(msg));
 	};
 
@@ -117,15 +117,15 @@ function Session(sid) {
             }
 
             // put the map inside the message
-            // states.zooMap = {};
-            // var count = 0;
-            // for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
-            //     for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
-            //         states.zooMap[count] = { tile_type: zooMap.cells[x][y].type,
-            //             item: zooMap.cells[x][y].item, x: x, y: y};
-            //         count ++;
-            //     }
-            // }
+             states.zooMap = {};
+             var count = 0;
+             for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
+                 for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
+                     states.zooMap[count] = { tile_type: zooMap.cells[x][y].type,
+                         item: zooMap.cells[x][y].item, x: x, y: y};
+                     count ++;
+                 }
+             }
 			//counter_debug++
 			//if(counter_debug == 1){
 			//	console.log("Broadcast to client: "+JSON.stringify(states)+"\r\n");
@@ -138,7 +138,7 @@ function Session(sid) {
 	};
 
     var plantBomb = function (player, x, y) {
-        var newBomb = new Bomb(player.avatarId, player.id, x, y);
+        var newBomb = new Bomb(player.avatarId, player.id, x, y, player.bombRange);
         bombs.push(newBomb);
         player.bombLeft--;
 
@@ -228,6 +228,10 @@ function Session(sid) {
     		zooMap.cells[x][y].item = 0;
 
     		switch(item) {
+                case 1:     //increase bomb range
+                    player.bombRange++;
+                    break;
+
     			case 2: 	//haste
     				player.speed+= 5;
     				break;
