@@ -151,7 +151,9 @@ var interval = 2000;
 
 
 var textColor = ["red", "green", "orange", "blue"];
-var testMove = ["UP RIGHT UP RIGHT UP RIGHT", "UP LEFT UP LEFT UP LEFT", "DOWN RIGHT DOWN RIGHT DOWN RIGHT",
+var testMove = ["UP RIGHT UP RIGHT UP RIGHT",
+                "UP LEFT UP LEFT UP LEFT",
+                "DOWN RIGHT DOWN RIGHT DOWN RIGHT",
                 "DOWN LEFT DOWN LEFT DOWN LEFT"];
 
 

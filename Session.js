@@ -59,6 +59,132 @@ function Session(sid) {
 		player.socket.write(JSON.stringify(msg));
 	};
 
+	var plantBomb = function (player, x, y) {
+		var newBomb = new Bomb(player.avatarId, player.id, x, y, player.bombRange);
+		bombs.push(newBomb);
+		player.bombLeft--;
+
+		// Update the cell to record that the bomb is there
+		zooMap.cells[x][y].hasBomb = true;
+	};
+
+	var bombExplode = function (bomb, bombIdx) {
+		// Update the cell that has the bomb that the bomb exploded
+		zooMap.cells[bomb.x][bomb.y].hasBomb = false;
+		console.log("\n" + JSON.stringify(bombs, null, 2));
+
+		// increase the bombLeft of the player
+		for (var i = 0; i < players.length; i++) {
+			if (bombs[i] !== undefined && players[i].id == bombs[bombIdx].playerId)
+				players[i].bombLeft++;
+		}
+
+		//console.log("\n" + JSON.stringify(zooMap.cells, null, 2));
+		console.log("\n" + JSON.stringify(bomb, null, 2));
+
+		// Remove the bomb from the bombs array
+		//bombs.splice(bombIdx, 1);
+		bombs[bombIdx] = undefined;
+
+
+		var up = true, down = true, left = true, right = true;
+
+		for (var i = 1; i <= bomb.range; i++) {
+			// if bomb explode upward
+			if (up && bomb.y+i < Zoo.ZOO_HEIGHT && zooMap.cells[bomb.x][bomb.y+i].type != 2) {
+				zooMap.cells[bomb.x][bomb.y+i].type = 0;
+				explodeOtherBomb(bomb.x, bomb.y+i);
+				killPlayer(bomb.x, bomb.y+i);
+			} else {
+				up = false;
+			}
+
+			if (down && bomb.y-i > 0 && zooMap.cells[bomb.x][bomb.y-i].type != 2) {
+				zooMap.cells[bomb.x][bomb.y-i].type = 0;
+				explodeOtherBomb(bomb.x, bomb.y-i);
+				killPlayer(bomb.x, bomb.y-i);
+			} else {
+				down = false;
+			}
+
+			if (left && bomb.x-i > 0 && zooMap.cells[bomb.x-i][bomb.y].type != 2) {
+				zooMap.cells[bomb.x-i][bomb.y].type = 0;
+				explodeOtherBomb(bomb.x-i, bomb.y);
+				killPlayer(bomb.x-i, bomb.y);
+			} else {
+				left = false;
+			}
+
+			if (right && bomb.x+i < Zoo.ZOO_WIDTH && zooMap.cells[bomb.x+i][bomb.y].type != 2) {
+				zooMap.cells[bomb.x+i][bomb.y].type = 0;
+				explodeOtherBomb(bomb.x+i, bomb.y);
+				killPlayer(bomb.x+i, bomb.y);
+			} else {
+				right = false;
+			}
+		}
+	};
+
+	// Explode the bomb at x, y if there is any
+	var explodeOtherBomb = function (x, y) {
+		if (zooMap.cells[x][y].hasBomb == false)
+			return;
+
+		for (var i = 0; i < bombs.length; i++) {
+			if (bombs[i].x == x && bombs[i].y == y)
+				bombExplode(bombs[i], i);
+		}
+	};
+
+	// Kill any the player if he/she at the position x, y
+	var killPlayer = function (x, y) {
+		for (var i = 0; i < players.length; i++) {
+			if ((players[i].x > x-0.5 || players[i].x < x+0.5) && (players[i].y > y-0.5 || players[i].y < y+0.5))
+				players[i].isAlive = false;
+		}
+	};
+
+	// Check if the player get item the the new position
+	var getItem = function (player, x, y) {
+		if (zooMap.cells[x][y].item != 0) {
+			var item = zooMap.cells[x][y].item;
+			player.items[item]++;
+			zooMap.cells[x][y].item = 0;
+
+			switch(item) {
+				case 1:     //increase bomb range
+					player.bombRange++;
+					break;
+
+				case 2: 	//haste
+					player.speed+= 5;
+					break;
+
+				case 4: 	//more bomb
+					player.bombLeft++;
+					break;
+			}
+		}
+	};
+
+	var selectAvatar = function (player, avatarId) {
+		for (var i = 0; i < players.length; i++) {
+			if (players[i].avatarId === avatarId)
+				return false;
+		}
+		player.avatarId = avatarId;
+		return true;
+	};
+
+	var getServerDelay = function () {
+		serverDelay = 0;
+		for (var i = 0; i < players.length; i++) {
+			if (players[i].delay > serverDelay)
+				serverDelay = players[i].delay;
+		}
+		return serverDelay;
+	};
+
 	/*
 	 * private method: reset()
 	 *
@@ -76,7 +202,7 @@ function Session(sid) {
             for(var i =0; i < players.plength; i++){
                 players[i] = null;
             }
-            player = [];
+            players = [];
 		}
 		console.log("Session " + that.sid + " has just ended!");
 	};
@@ -129,21 +255,6 @@ function Session(sid) {
                 };
             }
 
-            // put the map inside the message
-            // states.zooMap = {};
-            // var count = 0;
-            // for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
-            //     for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
-            //         states.zooMap[count] = { tile_type: zooMap.cells[x][y].type,
-            //             item: zooMap.cells[x][y].item, x: x, y: y};
-            //         count ++;
-            //     }
-            // }
-			//counter_debug++
-			//if(counter_debug == 1){
-			//	console.log("Broadcast to client: "+JSON.stringify(states)+"\r\n");
-			//}
-
             if (sendUpdate) 
                 broadcast(states);
 
@@ -153,132 +264,6 @@ function Session(sid) {
 			reset();
 		}
 	};
-
-    var plantBomb = function (player, x, y) {
-        var newBomb = new Bomb(player.avatarId, player.id, x, y, player.bombRange);
-        bombs.push(newBomb);
-        player.bombLeft--;
-
-        // Update the cell to record that the bomb is there
-        zooMap.cells[x][y].hasBomb = true;
-    }
-
-    var bombExplode = function (bomb, bombIdx) {
-    	// Update the cell that has the bomb that the bomb exploded
-    	zooMap.cells[bomb.x][bomb.y].hasBomb = false;
-        console.log("\n" + JSON.stringify(bombs, null, 2));
-
-        // increase the bombLeft of the player
-        for (var i = 0; i < players.length; i++) {
-            if (bombs[i] !== undefined && players[i].id == bombs[bombIdx].playerId)
-                players[i].bombLeft++;
-        }
-
-        //console.log("\n" + JSON.stringify(zooMap.cells, null, 2));
-        console.log("\n" + JSON.stringify(bomb, null, 2));
-
-    	// Remove the bomb from the bombs array
-    	//bombs.splice(bombIdx, 1);
-        bombs[bombIdx] = undefined;
-
-
-        var up = true, down = true, left = true, right = true;
-
-        for (var i = 1; i <= bomb.range; i++) {
-            // if bomb explode upward
-            if (up && bomb.y+i < Zoo.ZOO_HEIGHT && zooMap.cells[bomb.x][bomb.y+i].type != 2) {
-                zooMap.cells[bomb.x][bomb.y+i].type = 0;
-                explodeOtherBomb(bomb.x, bomb.y+i);
-                killPlayer(bomb.x, bomb.y+i);
-            } else {
-            	up = false;
-            }
-
-            if (down && bomb.y-i > 0 && zooMap.cells[bomb.x][bomb.y-i].type != 2) {
-                zooMap.cells[bomb.x][bomb.y-i].type = 0;
-                explodeOtherBomb(bomb.x, bomb.y-i);
-                killPlayer(bomb.x, bomb.y-i);
-            } else {
-            	down = false;
-            }
-
-            if (left && bomb.x-i > 0 && zooMap.cells[bomb.x-i][bomb.y].type != 2) {
-                zooMap.cells[bomb.x-i][bomb.y].type = 0;
-                explodeOtherBomb(bomb.x-i, bomb.y);
-                killPlayer(bomb.x-i, bomb.y);
-            } else {
-            	left = false;
-            }
-
-            if (right && bomb.x+i < Zoo.ZOO_WIDTH && zooMap.cells[bomb.x+i][bomb.y].type != 2) {
-                zooMap.cells[bomb.x+i][bomb.y].type = 0;
-                explodeOtherBomb(bomb.x+i, bomb.y);
-                killPlayer(bomb.x+i, bomb.y);
-            } else {
-            	right = false;
-            }
-        }
-    }
-
-    // Explode the bomb at x, y if there is any
-    var explodeOtherBomb = function (x, y) {
-    	if (zooMap.cells[x][y].hasBomb == false)
-    		return;
-
-    	for (var i = 0; i < bombs.length; i++) {
-    		if (bombs[i].x == x && bombs[i].y == y)
-    			bombExplode(bombs[i], i);
-    	}
-    }
-
-    // Kill any the player if he/she at the position x, y
-    var killPlayer = function (x, y) {
-        for (var i = 0; i < players.length; i++) {
-            if ((players[i].x > x-0.5 || players[i].x < x+0.5) && (players[i].y > y-0.5 || players[i].y < y+0.5))
-                players[i].isAlive = false;
-        }
-    }
-
-    // Check if the player get item the the new position
-    var getItem = function (player, x, y) {
-    	if (zooMap.cells[x][y].item != 0) {
-    		var item = zooMap.cells[x][y].item;
-    		player.items[item]++;
-    		zooMap.cells[x][y].item = 0;
-
-    		switch(item) {
-                case 1:     //increase bomb range
-                    player.bombRange++;
-                    break;
-
-    			case 2: 	//haste
-    				player.speed+= 5;
-    				break;
-
-    			case 4: 	//more bomb
-    				player.bombLeft++;
-    				break;
-    		}
-    	}
-    }
-
-    var selectAvatar = function (player, avatarId) {
-    	for (var i = 0; i < players.length; i++) {
-    		if (players[i].avatarId === avatarId)
-    			return false;
-    	}
-    	player.avatarId = avatarId;
-    	return true;
-    }
-
-    var getServerDelay = function () {
-        serverDelay = players[0].delay;
-        for (var i = 1; i < players.length; i++) {
-            if (players[i].delay > serverDelay)
-                serverDelay = players[i].delay;
-        }
-        return serverDelay;
-    }
 
 	/*
 	 * private method: startGame()
