@@ -146,15 +146,21 @@ function TestClient(id, shouldPrint) {
 	}
 }
 
-var interval = 2000;
+var interval = 300;
 
 
 
 var textColor = ["red", "green", "orange", "blue"];
+
+
 var testMove = ["UP RIGHT UP RIGHT UP RIGHT",
                 "UP LEFT UP LEFT UP LEFT",
                 "DOWN RIGHT DOWN RIGHT DOWN RIGHT",
                 "DOWN LEFT DOWN LEFT DOWN LEFT"];
+//var testMove = ["RIGHT BOMB RIGHT BOMB RIGHT BOMB UP",
+//                "",
+//                "",
+//                ""];
 
 
 var testSubject = [];
@@ -285,23 +291,21 @@ function delayCallback(callback, delay) {
 }
 
 function automatedTestFor(subjectId, initialDelay, moveSequence) {
-
 	var delay = initialDelay;
 	moveSequence = moveSequence.split(" ");
-
 
 	for (var i = 0; i < moveSequence.length; i++) {
 		var dir = moveSequence[i];
 		setTimeout(function (dir, i) {
-			//console.log("testSubject" +i+" move " + dir+". ");
-			testSubject[subjectId].move(dir);
-		}, delay, dir, subjectId);
+			console.log(dir);
+			if(dir === "BOMB"){
+				testSubject[subjectId].sendToServer({type: "plantBomb", x: testSubject[subjectId].x, y: testSubject[subjectId].y});
+			} else {
+				testSubject[subjectId].move(dir);
+			}
+		}, delay, dir);
 		delay += interval;
 	}
-	delayCallback(function () {
-		testSubject[subjectId].sendToServer({type: "plantBomb", x: testSubject[subjectId].x, y: testSubject[subjectId].y});
-	}, delay);
-
 }
 
 

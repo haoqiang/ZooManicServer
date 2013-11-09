@@ -150,7 +150,7 @@ function Session(sid) {
 			return;
 
 		for (var i = 0; i < bombs.length; i++) {
-			if (bombs[i].x == x && bombs[i].y == y)
+			if (bombs[i]!==undefined && bombs[i].x == x && bombs[i].y == y)
 				bombExplode(bombs[i], i);
 		}
 	};
@@ -367,7 +367,6 @@ function Session(sid) {
 				break;
 
 			case "move":
-                console.log(msg);
 				broadcast({
                     type:       "move",
                     playerId:   player.id,
@@ -393,8 +392,7 @@ function Session(sid) {
 
                 setTimeout(function(){
                     plantBomb(player, Math.round(msg.x), Math.round(msg.y));
-                }, getServerDelay());                
-				console.log(msg);
+                }, getServerDelay());
 				break;
 
 			default:
