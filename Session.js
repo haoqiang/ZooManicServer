@@ -36,7 +36,9 @@ function Session(sid) {
 	 */
 	var broadcast = function (msg) {
         var timestamp = new Date().getTime();
-        msg["timestamp"] = timestamp + getServerDelay();
+		var serverDelay = getServerDelay();
+		msg.serverDelay = serverDelay;
+		msg.timestamp = timestamp + serverDelay;
 		for (var i = 0; i < players.length; i++) {
 			players[i].socket.write(JSON.stringify(msg));
 		}
@@ -50,7 +52,9 @@ function Session(sid) {
 	 */
 	var unicast = function (player, msg) {
         var timestamp = new Date().getTime();
-        msg["timestamp"] = timestamp + getServerDelay();
+		var serverDelay = getServerDelay();
+		msg.serverDelay = serverDelay;
+		msg.timestamp = timestamp + serverDelay;
 		player.socket.write(JSON.stringify(msg));
 	};
 
@@ -71,7 +75,7 @@ function Session(sid) {
             for(var i =0; i < players.plength; i++){
                 players[i] = null;
             }
-            player = [];
+            //players = [];
 		}
 		console.log("Session " + that.sid + " has just ended!");
 	};
@@ -167,7 +171,7 @@ function Session(sid) {
 
         // increase the bombLeft of the player
         for (var i = 0; i < players.length; i++) {
-            if (bombs[i] !== undefined && players[i].id == bombs[bombIdx].playerId)
+            if (bombs[i] !== undefined && players[i].id == bombs[i].playerId)
                 players[i].bombLeft++;
         }
 
@@ -269,10 +273,11 @@ function Session(sid) {
     }
 
     var getServerDelay = function () {
-        serverDelay = players[0].delay;
-        for (var i = 1; i < players.length; i++) {
-            if (players[i].delay > serverDelay)
-                serverDelay = players[i].delay;
+	    serverDelay = 0;
+        for (var i = 0; i < players.length; i++) {
+            if (players[i].delay >= serverDelay){
+	            serverDelay = players[i].delay;
+            }
         }
         return serverDelay;
     }
@@ -301,7 +306,7 @@ function Session(sid) {
 			serverTime = new Date().getTime();
 
             console.log("Session state:\n" + JSON.stringify(that.getState(), null, 2))
-            broadcast({type:"start", content: that.getState().players, startTime: serverTime, zooMap: zooState});
+            broadcast({type:"start", content: that.getState().players, startTime: serverTime});
 
 
             gameEnd = false;

@@ -89,7 +89,7 @@ function TestClient(id, shouldPrint) {
 										$("#output").prepend("<h3>Player "+playerId+" is killed!</h3>");
 									}
 								}
-								var delay = ((message.timestamp - that.serverTime) - (new Date().getTime() - that.localTime));
+								var delay = ((message.timestamp - that.serverTime) - (new Date().getTime() - that.localTime)) - message.serverDelay;
 								if(delay > 0){
 									that.delay = delay;
 								}
