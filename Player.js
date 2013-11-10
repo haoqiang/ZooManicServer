@@ -35,7 +35,22 @@ function Player(id, name, socket, type) {
 	this.bombLeft = 3;
 	this.isAlive = true;
 	this.bombRange = 3;
-	this.items = [0, 0, 0, 0, 0];
+	this.items = [0, 0, 0, 0, 0, 0];
+	this.invunerable = 0;
+	this.invunerable_timestamp;
+
+	this.kill = 0;
+
+	this.checkInvunerable = function () {
+		if (!this.invunerable)
+			return 0;
+
+		var now = new Date().getTime();
+		if (now - this.invunerable_timestamp >= 5000)
+			return true; 
+		else
+			return false;
+	}
 
 
 	//
