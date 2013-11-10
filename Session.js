@@ -299,7 +299,7 @@ function Session(sid) {
 		if (!gameEnd) {
 			var aliveCount = 0;
 			var sendUpdate = false;
-            var winner;
+            var winnerId, winnerName;
 
 			var states = {};
 			states["type"] = "update";
@@ -352,8 +352,8 @@ function Session(sid) {
 
 				if (players[i].isAlive)
 					aliveCount++;
-                winner = players[i].id;
-
+                winnerId = players[i].id;
+                winnerName = players[i].name;
 			}
 
 			// put the map inside the message
@@ -388,7 +388,8 @@ function Session(sid) {
                 broadcast({
                     type: "gameEnd",
                     content: {
-                        winnerId: winner
+                        winnerName: winnerName, 
+                        winnerId: winnerId
                     }
                 });
             }
