@@ -30,7 +30,7 @@ function Player(id, name, socket, type) {
 	this.isMoving = false;
 	this.direction;
 
-	this.speed = 15;
+	this.speed = 30;
 	this.cellSpeed = this.speed / Zoo.CELL_WIDTH / Zoo.FRAME_RATE; // cell distance per frame
 	this.bombLeft = 3;
 	this.isAlive = true;
@@ -74,7 +74,7 @@ function Player(id, name, socket, type) {
 		var now = new Date().getTime();
 		if (now - this.haste_timestamp >= 10000) {
 			this.haste = 0;
-			this.speed = 15;
+			this.speed = 30;
 			return false; 
 		}
 		else 

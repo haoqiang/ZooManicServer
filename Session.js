@@ -109,7 +109,7 @@ function Session(sid) {
 
 		// increase the bombLeft of the player
 		for (var i = 0; i < players.length; i++) {
-			if (bombs[i] !== undefined && players[i].id == bombs[bombIdx].playerId)
+			if (bombs[bombIdx] !== undefined && players[i].id == bombs[bombIdx].playerId)
 				players[i].bombLeft++;
 		}
         var bomb_playerId = bomb.playerId;
