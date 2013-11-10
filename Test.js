@@ -26,7 +26,7 @@ function TestClient(id, shouldPrint) {
 			msg.delay = that.delay;
 		}
 		if (msg.type !== "ping") {
-			$("#output").prepend("<hr>outgoing:<br><pre>" + JSON.stringify(msg, null, 4) + "</pre>");
+			//$("#output").prepend("<hr>outgoing:<br><pre>" + JSON.stringify(msg, null, 4) + "</pre>");
 		}
 		socket.send(JSON.stringify(msg));
 	}
@@ -87,7 +87,7 @@ function TestClient(id, shouldPrint) {
 								if (key + "" === playerId + "") {
 									that.x = players[key].x;
 									that.y = players[key].y;
-									if((that.x+"").match(/^\d+$/)&&(that.y+"").match(/^\d+$/)){
+									if ((that.x + "").match(/^\d+$/) && (that.y + "").match(/^\d+$/)) {
 										that.readyForAction = true;
 									}
 									if (!players[key].isAlive) {
@@ -116,7 +116,44 @@ function TestClient(id, shouldPrint) {
 		} catch (e) {
 			console.log("Failed to connect");
 		}
-	}
+	};
+
+	this.setSession = function (sid) {
+		that.sendToServer({
+			type: "setSession",
+			sessionId: sid
+		});
+	};
+
+	this.ready = function (avatarId) {
+		that.sendToServer({
+			type: "playerReady",
+			avatarId: avatarId
+		});
+	};
+
+	this.start = function () {
+		that.sendToServer({
+			type: "start"
+		});
+	};
+
+	this.move = function (dir) {
+		that.sendToServer({
+			type     : "move",
+			cellX    : that.x,
+			cellY    : that.y,
+			direction: dir
+		});
+	};
+
+	this.bomb = function () {
+		that.sendToServer({
+			type: "plantBomb",
+			x   : that.x,
+			y   : that.y
+		});
+	};
 
 	this.refresh = function () {
 		$("#playerInfo").find(".player").each(function () {
@@ -126,19 +163,20 @@ function TestClient(id, shouldPrint) {
 				$(this).find(".pos_y").val(that.playerList[sid].y);
 			}
 		});
-	}
+	};
 
-	this.start = function () {
+	this.init = function (delay) {
 		// Initialize network and GUI
 		this.initNetwork();
-		var delay = 3000;
-		if (location.host === "") {
-			delay = 1000;
-		}
+		delay = (delay===undefined)?0:delay;
 		setTimeout(function () {
-			that.sendToServer({type: "newPlayer", playerName: "TestPlayer-" + Math.floor((Math.random() * 10)), secret: Zoo.SECRET_KEY });
-		}, delay + 10 * that.subjectId);
-	}
+			that.sendToServer({
+				type: "newPlayer",
+				playerName: "TestPlayer-" + Math.floor((Math.random() * 10)),
+				secret: Zoo.SECRET_KEY
+			});
+		}, delay);
+	};
 }
 
 var interval = 600;
@@ -157,104 +195,99 @@ var textColor = ["red", "green", "orange", "blue"];
 //                ""];
 
 //  Explode with no hit
-var testMove = ["RIGHT BOMB RIGHT BOMB",
-                "",
-                "",
-                ""];
+var testMove = ["RIGHT BOMB RIGHT BOMB", "", "", ""];
 
 
 var testSubject = [];
-var testSubjectSize = 4;
 
-for (var i = 0; i < testSubjectSize; i++) {
-	if (i === 0) {
-		testSubject.push(new TestClient(i, true));
-	} else {
-		testSubject.push(new TestClient(i, false));
-	}
-	testSubject[i].start();
-}
+
 
 $(document).ready(function () {
+
+	var delay = 3000;
+	if (location.host === "") {
+		delay = 1000;
+	}
+
+
+	$(".createPlayer").on("click", function () {
+		console.log($(this).attr("player"));
+		if ($(this).attr("player") === "all") {
+			for (var i = 0; i < 4; i++) {
+				if (i === 0) {
+					testSubject.push(new TestClient(i, true));
+				} else {
+					testSubject.push(new TestClient(i, false));
+				}
+				testSubject[i].init(50 * i + delay);
+			}
+		} else {
+			testSubject.push(new TestClient(testSubject.length, false));
+			testSubject[testSubject.length - 1].init(delay);
+		}
+	});
 	$(".getAllPlayer").on("click", function () {
 		testSubject[0].sendToServer({type: "getAllPlayerStats"});
 	});
-
 	$(".getAllSession").on("click", function () {
 		testSubject[0].sendToServer({type: "getAllSession"});
 	});
-
 	$(".setAllSession").on("click", function () {
 		var sid = $("#sessionId").val();
 		if ($.isNumeric(sid)) {
-			for (var i = 0; i < testSubjectSize; i++) {
-				testSubject[i].sendToServer({type: "setSession", sessionId: sid});
+			for (var i = 0; i < testSubject.length; i++) {
+				testSubject[i].setSession(sid);
 			}
 		}
 	});
-
 	$(".readyAll").on("click", function () {
-		for (var i = 0; i < testSubjectSize; i++) {
-			testSubject[i].sendToServer({type: "playerReady", avatarId: i});
+		for (var i = 0; i < testSubject.length; i++) {
+			testSubject[i].ready(i);
 		}
 	});
 
+
+	// Full user control
 	$(".setSession").on("click", function () {
 		var subjectId = $(this).parent(".player").attr("subjectId");
-
 		var sid = $(this).parent(".player").find(".sessionId").val();
 		if ($.isNumeric(sid)) {
-			testSubject[subjectId].sendToServer({type: "setSession", sessionId: sid});
+			testSubject[subjectId].setSession(sid);
 		}
 	});
-
 	$(".ready").on("click", function () {
 		var subjectId = $(this).parent(".player").attr("subjectId");
 		var avatarId = $("#avatarId").val();
 		avatarId = $.isNumeric(parseInt(avatarId)) ? avatarId : 0;
-
-		testSubject[subjectId].sendToServer({type: "playerReady", avatarId: avatarId});
+		testSubject[subjectId].ready(avatarId);
 	});
-
 	$(".start").on("click", function () {
 		var subjectId = $(this).parent(".player").attr("subjectId");
-
-		testSubject[subjectId].sendToServer({type: "start"});
+		testSubject[subjectId].start();
 	});
-
 	$(".bomb").on("click", function () {
 		var subjectId = $(this).parent(".player").attr("subjectId");
-
-		testSubject[subjectId].sendToServer({type: "plantBomb", x: testSubject[subjectId].x, y: testSubject[subjectId].y});
+		testSubject[subjectId].bomb();
 	});
-
-
 	$(".up").on("click", function () {
 		var subjectId = $(this).parent(".player").attr("subjectId");
-
 		testSubject[subjectId].move("UP");
 	});
-
 	$(".left").on("click", function () {
 		var subjectId = $(this).parent(".player").attr("subjectId");
-
 		testSubject[subjectId].move("LEFT");
 	});
-
 	$(".down").on("click", function () {
 		var subjectId = $(this).parent(".player").attr("subjectId");
-
 		testSubject[subjectId].move("DOWN");
 	});
-
 	$(".right").on("click", function () {
 		var subjectId = $(this).parent(".player").attr("subjectId");
-
 		testSubject[subjectId].move("RIGHT");
 	});
 
 
-
+	// For auto testing
 	$(".auto").on("click", function () {
 		testSubject[0].sendToServer({type: "setSession", sessionId: "100000"});
 		testSubject[0].sendToServer({type: "start"});
@@ -264,12 +297,12 @@ $(document).ready(function () {
 		var sid = $("#sessionId").val();
 		var delay = 0;
 		delay = delayCallback(function () {
-			for (var i = 0; i < testSubjectSize; i++) {
+			for (var i = 0; i < testSubject.length; i++) {
 				testSubject[i].sendToServer({type: "setSession", sessionId: sid});
 			}
 		}, delay);
 		delay = delayCallback(function () {
-			for (var i = 0; i < testSubjectSize; i++) {
+			for (var i = 0; i < testSubject.length; i++) {
 				testSubject[i].sendToServer({type: "playerReady", avatarId: i});
 			}
 		}, delay);
@@ -277,7 +310,7 @@ $(document).ready(function () {
 			testSubject[0].sendToServer({type: "start"});
 		}, delay);
 		delay = delayCallback(function () {
-			for (var i = 0; i < testSubjectSize; i++) {
+			for (var i = 0; i < testSubject.length; i++) {
 				automatedTestFor(i, 50 * i, testMove[i]);
 			}
 		}, delay);
@@ -290,10 +323,8 @@ function delayCallback(callback, delay) {
 }
 
 function automatedTestFor(subjectId, initialDelay, moveSequence) {
-	var delay = initialDelay;
 	moveSequence = moveSequence.split(" ");
-
-	setTimeout(makeAction, delay, subjectId, moveSequence, 0);
+	setTimeout(makeAction, initialDelay, subjectId, moveSequence, 0);
 }
 
 var deafaultDelay = 100;
@@ -304,24 +335,15 @@ function makeAction(subjectId, moveSequence, index) {
 			var dir = moveSequence[index];
 			console.log(moveSequence[index]);
 			if (dir === "BOMB") {
-				cp.sendToServer({
-					type: "plantBomb",
-					x   : cp.x,
-					y   : cp.y
-				});
+				cp.bomb();
 				console.log("[" + subjectId + "]" + " plantBomb at " + cp.gameClock);
 			} else if (dir === "UP" || dir === "DOWN" || dir === "LEFT" || dir === "RIGHT") {
-				cp.sendToServer({
-					type     : "move",
-					cellX    : cp.x,
-					cellY    : cp.y,
-					direction: dir
-				});
+				cp.move(dir);
 				cp.readyForAction = false;
 				console.log("[" + subjectId + "]" + " move " + dir + " from (" + cp.x + "," + cp.y + ") at " + cp.gameClock);
 			}
-			setTimeout(makeAction, interval, subjectId, moveSequence, index+1);
-		} else{
+			setTimeout(makeAction, interval, subjectId, moveSequence, index + 1);
+		} else {
 			console.log("Player haven't finish last action!");
 			setTimeout(makeAction, deafaultDelay, subjectId, moveSequence, index);
 		}

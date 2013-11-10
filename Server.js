@@ -67,17 +67,23 @@ function Server() {
 		if (playerId === undefined) {
 			for (var key in players) {
 				if (players.hasOwnProperty(key)) {
-					if (new Date().getTime() - players[key].lastPing > pingInterval * 100) {
+					if (new Date().getTime() - players[key].lastPing > pingInterval * 10) {
 						delete players[key];
 						console.log("Player " + key + " removed due to no responding in " + (pingInterval * 15)/1000 + "s.");
 					}
 				}
 			}
-			//console.log("test: " + new Date().getTime());
-			broadcast({type: "ping", timestamp: new Date().getTime()});
+			var si = new Date().getTime();
+			for (var key in players) {
+				if (players.hasOwnProperty(key)) {
+					players[key].serialNo = si;
+				}
+			}
+			broadcast({type: "ping", timestamp: si});
 		} else {
-			//console.log("test: " + new Date().getTime());
-			unicast(players[playerId].socket, {type: "ping", timestamp: new Date().getTime()});
+			var si = new Date().getTime();
+			players[playerId].serialNo = si;
+			unicast(players[playerId].socket, {type: "ping", timestamp: si});
 		}
 	};
 
@@ -125,7 +131,7 @@ function Server() {
 
 						//	return player id
 						unicast(conn, {type: "newPlayerReply", status: 0, playerId: playerId});
-						setTimeout(updateDelay, 100, playerId);
+						setTimeout(updateDelay, 100);
 
 						//	update total player count
 						playerCount++;
@@ -184,10 +190,15 @@ function Server() {
 								break;
 							case "ping":
 								// Delay is half RTT, not used in latest part
-								var currentTime = new Date().getTime();
-								players[playerId].delay = Math.round((currentTime - message.timestamp) / 2)+1;
-								players[playerId].lastPing = currentTime;
-								console.log(players[playerId].delay );
+								var time = message.timestamp;
+								if(time === players[playerId].serialNo){
+									var currentTime = new Date().getTime();
+									players[playerId].delay = Math.round((currentTime - time) / 2)+1;
+									players[playerId].lastPing = currentTime;
+									//console.log("Delay: " + players[playerId].delay);
+								} else {
+									console.log("Serial number is not correct");
+								}
 								break;
 							default:
 								//
@@ -195,9 +206,9 @@ function Server() {
 								//    to that session to handle
 								//
 								if (players[playerId].sessionId !== undefined) {
-									// if(message.delay !== undefined && message.delay > 0){
-									// 	players[playerId].delay = message.delay;
-									// }
+									if(message.delay !== undefined && message.delay > 0){
+										players[playerId].delay = message.delay;
+									}
 									sessions[players[playerId].sessionId].digest(players[playerId], message);
 								} else {
 									console.log("Unhandled message." + message.type);
