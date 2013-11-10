@@ -168,7 +168,7 @@ var testSubjectSize = 4;
 
 for (var i = 0; i < testSubjectSize; i++) {
 	if (i === 0) {
-		testSubject.push(new TestClient(i, false));
+		testSubject.push(new TestClient(i, true));
 	} else {
 		testSubject.push(new TestClient(i, false));
 	}

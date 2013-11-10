@@ -72,7 +72,7 @@ function Session(sid) {
 	 *
 	 * e.g., unicast(socket, {type: "abc", x: 30});
 	 */
-	var unicast = function (player, serverDelay) {
+	var unicast = function (player, msg, serverDelay) {
 		var timestamp = new Date().getTime();
 		serverDelay = (serverDelay === undefined) ? 0 : serverDelay;
 		msg.serverDelay = serverDelay;
