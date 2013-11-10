@@ -88,7 +88,7 @@ function Player(id, name, socket, type) {
 		var now = new Date().getTime();
 		if (now - this.moreBomb_timestamp >= 10000) {
 			this.moreBomb = 0;
-			this.bombLeft = 3;
+			this.bombLeft -= 3;
 			return false; 
 		}
 		else 
