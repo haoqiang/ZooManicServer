@@ -62,12 +62,12 @@ function Server() {
 	//      and most importantly check if user is
 	//      still connected
 	//
-	var pingInterval = 500000;
+	var pingInterval = 5000;
 	var updateDelay = function (playerId) {
 		if (playerId === undefined) {
 			for (var key in players) {
 				if (players.hasOwnProperty(key)) {
-					if (new Date().getTime() - players[key].lastPing > pingInterval * 10) {
+					if (new Date().getTime() - players[key].lastPing > pingInterval * 100) {
 						delete players[key];
 						console.log("Player " + key + " removed due to no responding in " + (pingInterval * 15)/1000 + "s.");
 					}
@@ -206,9 +206,9 @@ function Server() {
 								//    to that session to handle
 								//
 								if (players[playerId].sessionId !== undefined) {
-									if(message.delay !== undefined && message.delay > 0){
-										players[playerId].delay = message.delay;
-									}
+									// if(message.delay !== undefined && message.delay > 0){
+									// 	players[playerId].delay = message.delay;
+									// }
 									sessions[players[playerId].sessionId].digest(players[playerId], message);
 								} else {
 									console.log("Unhandled message." + message.type);

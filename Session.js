@@ -349,20 +349,21 @@ function Session(sid) {
 				}
 			}
 
-            broadcast({
-                type: "killMessage",
-                content: kill_message
-            });
+
+			if (sendUpdate) {
+				broadcast(states);
+                broadcast({
+                    type: "killMessage",
+                    content: kill_message
+                });
+			} else {
+				testcast(states);
+			}
+
             // Send message for killing player
             if (kill_message !== "nothing") {
                 kill_message = "nothing";
             }
-
-			if (sendUpdate) {
-				broadcast(states);
-			} else {
-				testcast(states);
-			}
 
 			if (aliveCount <= 1 && players.length > 1) {
 				gameEnd = true;
