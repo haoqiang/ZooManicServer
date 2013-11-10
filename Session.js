@@ -363,6 +363,7 @@ function Session(sid) {
             // Initialize map
 			zooMap = new ZooMap();
 
+
             // Initialize player position
             for (var i = 0; i < players.length; i++) {
                 players[i].x = startPoint[i].x;
@@ -379,6 +380,8 @@ function Session(sid) {
                     zooState[count] = { tile_type: zooMap.cells[x][y].type,
                         item: zooMap.cells[x][y].item, x: x, y: y};
                     count ++;
+
+                    //console.log(x + " - " + y + " - " + zooMap.cells[x][y].item);
                 }
             }
 
