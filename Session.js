@@ -72,7 +72,7 @@ function Session(sid) {
 	 *
 	 * e.g., unicast(socket, {type: "abc", x: 30});
 	 */
-	var unicast = function (player, serverDelay) {
+	var unicast = function (player, msg, serverDelay) {
 		var timestamp = new Date().getTime();
 		serverDelay = (serverDelay === undefined) ? 0 : serverDelay;
 		msg.serverDelay = serverDelay;
@@ -176,7 +176,7 @@ function Session(sid) {
 
 	// Check if the player get item the the new position
 	var getItem = function (player, x, y) {
-		console.log("x: " + x + " y: " + y);
+		//console.log("x: " + x + " y: " + y);
 		if (zooMap.cells[x][y].item != 0) {
 			var item = zooMap.cells[x][y].item;
 			player.items[item]++;
@@ -222,7 +222,7 @@ function Session(sid) {
 				serverDelay = players[i].delay;
 		}
 		console.log(serverDelay);
-		return serverDelay;
+		return Math.ceil(serverDelay);
 	};
 
 	/*
@@ -413,6 +413,11 @@ function Session(sid) {
 				}, sdelay);
 				// wait for delay
 				setTimeout(function () {
+                    var timestamp = new Date().getTime();
+                    var gameclock = timestamp - serverTime;
+                    console.log("time: " + gameclock);
+                    player.x = msg.cellX;
+                    player.y = msg.cellY;
 					player.isMoving = true;
 					player.direction = msg.direction;
 				}, sdelay);
