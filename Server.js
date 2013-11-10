@@ -120,6 +120,11 @@ function Server() {
 					//
 					//	check new incoming connection player id
 					//
+					 if(message.type === "pingRefresh"){ 
+						console.log(message)
+						conn.write(JSON.stringify(message));
+					}
+
 					if (message.type === "newPlayer") {
 						playerId = new Date().getTime();
 						var playerName = message.playerName;
@@ -199,7 +204,7 @@ function Server() {
 								} else {
 									console.log("Serial number is not correct");
 								}
-								break;
+								break; 
 							default:
 								//
 								// if user belongs to a session, pass the message

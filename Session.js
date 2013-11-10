@@ -41,7 +41,7 @@ function Session(sid) {
 		serverDelay = (serverDelay === undefined) ? 0 : serverDelay;
 		msg.serverDelay = serverDelay;
 		msg.timestamp = timestamp + serverDelay;
-		console.log(msg.timestamp);
+		//console.log(msg.timestamp);
 
 		for (var i = 0; i < players.length; i++) {
 			players[i].socket.write(JSON.stringify(msg));
@@ -203,11 +203,15 @@ function Session(sid) {
 				case 1:     //increase bomb range
 					player.bombRange += player.bombRange;
 					player.items[item]++;
+                    player.moreRange = 1;
+                    player.moreRange_timestamp = new Date().getTime();
 					break;
 
 				case 2: 	//haste
 					player.speed += player.speed;
 					player.items[item]++;
+                    player.haste = 1;
+                    player.haste_timestamp = new Date().getTime();
 					break;
 
                 case 3:
@@ -219,11 +223,14 @@ function Session(sid) {
 				case 4: 	//more bomb
 					player.bombLeft += player.bombLeft;
 					player.items[item]++;
+                    player.moreBomb = 1;
+                    player.moreBomb_timestamp = new Date().getTime();
 					break;
 
                 case 5:
-                    player.shakable = true;
                     player.items[item]++;
+                    player.shakable = 1;
+                    player.moreRange_timestamp = new Date().getTime();
                     break;
 			}
 
@@ -318,6 +325,12 @@ function Session(sid) {
 			for (var i = 0; i < players.length; i++) {
 				players[i].moveOneStep();
 
+                players[i].checkHaste();
+                players[i].checkMoreBomb();
+                players[i].checkMoreRange();
+                players[i].checkShakable();
+                players[i].checkInvunerable();
+                
 				if (getItem(players[i], Math.round(players[i].x), Math.round(players[i].y)))
 					sendUpdate = true;
 

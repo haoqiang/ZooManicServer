@@ -36,8 +36,21 @@ function Player(id, name, socket, type) {
 	this.isAlive = true;
 	this.bombRange = 3;
 	this.items = [0, 0, 0, 0, 0, 0];
+	
 	this.invunerable = 0;
 	this.invunerable_timestamp;
+
+	this.moreBomb = 0;
+	this.moreBomb_timestamp;
+
+	this.moreRange = 0;
+	this.moreRange_timestamp;
+
+	this.haste = 0;
+	this.haste_timestamp;
+
+	this.shakable = 0;
+	this.shakable_timestamp;
 
 	this.kill = 0;
 
@@ -46,11 +59,70 @@ function Player(id, name, socket, type) {
 			return 0;
 
 		var now = new Date().getTime();
-		if (now - this.invunerable_timestamp >= 5000)
-			return true; 
-		else
-			return false;
+		if (now - this.invunerable_timestamp >= 5000) {
+			this.invunerable = 0;
+			return false; 
+		}
+		else 
+			return true;
 	}
+
+	this.checkHaste = function () {
+		if (!this.haste)
+			return 0;
+
+		var now = new Date().getTime();
+		if (now - this.haste_timestamp >= 10000) {
+			this.haste = 0;
+			this.speed = 15;
+			return false; 
+		}
+		else 
+			return true;
+	}
+
+	this.checkMoreBomb = function () {
+		if (!this.moreBomb)
+			return 0;
+
+		var now = new Date().getTime();
+		if (now - this.moreBomb_timestamp >= 10000) {
+			this.moreBomb = 0;
+			this.bombLeft = 3;
+			return false; 
+		}
+		else 
+			return true;
+	}
+
+	this.checkMoreRange = function () {
+		if (!this.moreRange)
+			return 0;
+
+		var now = new Date().getTime();
+		if (now - this.moreRange_timestamp >= 10000) {
+			this.moreRange = 0;
+			this.bombRange = 3;
+			return false; 
+		}
+		else 
+			return true;
+	}
+
+	this.checkShakable = function () {
+		if (!this.shakable)
+			return 0;
+
+		var now = new Date().getTime();
+		if (now - this.shakable_timestamp >= 10000) {
+			this.shakable = 0;
+			return false; 
+		}
+		else 
+			return true;
+	}
+
+
 
 
 	//
