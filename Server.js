@@ -62,7 +62,7 @@ function Server() {
 	//      and most importantly check if user is
 	//      still connected
 	//
-	var pingInterval = 5000;
+	var pingInterval = 500000;
 	var updateDelay = function (playerId) {
 		if (playerId === undefined) {
 			for (var key in players) {

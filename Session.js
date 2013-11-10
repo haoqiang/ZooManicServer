@@ -28,6 +28,7 @@ function Session(sid) {
 	// 		  { x: 2, y: 2 }];
 	var serverTime;
 	var serverDelay;
+    var kill_message = "nothing";
 
 	/*
 	 * broadcast takes in a JSON structure and send it to
@@ -176,12 +177,16 @@ function Session(sid) {
 				console.log("player " + players[i].id + " is killed!");
 				players[i].isAlive = false;
 
+                var dead_player = players[i].name;
+                var scored_player;
                 // Increase the kill of the other player
                 for (var j = 0; j < players.length; j++) {
                     if (players[j].id == bomb_playerId) {
-                        players[i].kill++;
+                        players[j].kill++;
+                        scored_player = players[j].name;
                     }
                 }
+                kill_message = scored_player + " has killed " + dead_player;
 			}
 		}
 	};
@@ -343,6 +348,15 @@ function Session(sid) {
 					count++;
 				}
 			}
+
+            broadcast({
+                type: "killMessage",
+                content: kill_message
+            });
+            // Send message for killing player
+            if (kill_message !== "nothing") {
+                kill_message = "nothing";
+            }
 
 			if (sendUpdate) {
 				broadcast(states);
