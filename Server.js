@@ -123,6 +123,7 @@ function Server() {
 
 						//	return player id
 						unicast(conn, {type: "newPlayerReply", status: 0, playerId: playerId});
+						setTimeout(updateDelay, 100);
 
 						//	update total player count
 						playerCount++;
@@ -182,8 +183,9 @@ function Server() {
 							case "ping":
 								// Delay is half RTT, not used in latest part
 								var currentTime = new Date().getTime();
-								//players[playerId].delay = (currentTime - message.timestamp) / 2;
+								players[playerId].delay = Math.round((currentTime - message.timestamp) / 2)+1;
 								players[playerId].lastPing = currentTime;
+								console.log(players[playerId].delay );
 								break;
 							default:
 								//
