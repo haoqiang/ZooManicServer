@@ -281,10 +281,14 @@ function Session(sid) {
 			gameEnd = true;
 			// remove all player
 			for (var i = 0; i < players.plength; i++) {
+                players.avatarId = undefined;
 				players[i] = null;
 			}
 			players = [];
 		}
+        
+        var serverTime = undefined;
+        var serverDelay = undefined;
 		console.log("Session " + that.sid + " has just ended!");
 	};
 
