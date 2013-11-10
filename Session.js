@@ -96,7 +96,12 @@ function Session(sid) {
 
 	var bombExplode = function (bomb, bombIdx, states) {
 		if (states !== undefined) {
-			states.bombs.exploded.push({x: bombs[bombIdx].x, y: bombs[bombIdx].y, playerId: bombs[bombIdx].playerId});
+			states.bombs.exploded.push({
+                range: bombs[bombIdx].range,
+                x: bombs[bombIdx].x,
+                y: bombs[bombIdx].y, 
+                playerId: bombs[bombIdx].playerId
+            });
 		}
 		// Update the cell that has the bomb that the bomb exploded
 		zooMap.cells[bomb.x][bomb.y].hasBomb = false;
@@ -330,7 +335,7 @@ function Session(sid) {
                 players[i].checkMoreRange();
                 players[i].checkShakable();
                 players[i].checkInvunerable();
-                
+
 				if (getItem(players[i], Math.round(players[i].x), Math.round(players[i].y)))
 					sendUpdate = true;
 
