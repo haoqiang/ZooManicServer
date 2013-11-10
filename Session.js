@@ -104,6 +104,8 @@ function Session(sid) {
 				players[i].bombLeft++;
 		}
 
+        var bomb_playerId = bomb.playerId;
+
 		//console.log("\n" + JSON.stringify(zooMap.cells, null, 2));
 		//console.log("\n" + JSON.stringify(bomb, null, 2));
 
@@ -119,7 +121,7 @@ function Session(sid) {
 			if (up && bomb.y+i < Zoo.ZOO_HEIGHT && zooMap.cells[bomb.x][bomb.y+i].type != 2) {
 				zooMap.cells[bomb.x][bomb.y+i].type = 0;
 				explodeOtherBomb(bomb.x, bomb.y+i, states);
-				killPlayer(bomb.x, bomb.y+i);
+				killPlayer(bomb.x, bomb.y+i, bomb_playerId);
 			} else {
 				up = false;
 			}
@@ -127,7 +129,7 @@ function Session(sid) {
 			if (down && bomb.y-i > 0 && zooMap.cells[bomb.x][bomb.y-i].type != 2) {
 				zooMap.cells[bomb.x][bomb.y-i].type = 0;
 				explodeOtherBomb(bomb.x, bomb.y-i, states);
-				killPlayer(bomb.x, bomb.y-i);
+				killPlayer(bomb.x, bomb.y-i, bomb_playerId);
 			} else {
 				down = false;
 			}
@@ -135,7 +137,7 @@ function Session(sid) {
 			if (left && bomb.x-i > 0 && zooMap.cells[bomb.x-i][bomb.y].type != 2) {
 				zooMap.cells[bomb.x-i][bomb.y].type = 0;
 				explodeOtherBomb(bomb.x-i, bomb.y, states);
-				killPlayer(bomb.x-i, bomb.y);
+				killPlayer(bomb.x-i, bomb.y, bomb_playerId);
 			} else {
 				left = false;
 			}
@@ -143,7 +145,7 @@ function Session(sid) {
 			if (right && bomb.x+i < Zoo.ZOO_WIDTH && zooMap.cells[bomb.x+i][bomb.y].type != 2) {
 				zooMap.cells[bomb.x+i][bomb.y].type = 0;
 				explodeOtherBomb(bomb.x+i, bomb.y, states);
-				killPlayer(bomb.x+i, bomb.y);
+				killPlayer(bomb.x+i, bomb.y, bomb_playerId);
 			} else {
 				right = false;
 			}
@@ -162,11 +164,18 @@ function Session(sid) {
 	};
 
 	// Kill any the player if he/she at the position x, y
-	var killPlayer = function (x, y) {
+	var killPlayer = function (x, y, bomb_playerId) {
 		for (var i = 0; i < players.length; i++) {
 			if (players[i].isAlive && (players[i].x > x-0.5 && players[i].x < x+0.5) && (players[i].y > y-0.5 && players[i].y < y+0.5)){
 				console.log("player "+players[i].id+" is killed!");
 				players[i].isAlive = false;
+
+                // Increase the kill of the other player
+                for (var j = 0; j < players.length; j++) {
+                    if (players[j].id == bomb_playerId) {
+                        players[i].kill++;
+                    }
+                }
 			}
 		}
 	};
@@ -188,6 +197,11 @@ function Session(sid) {
 					player.speed+= 5;
                     player.items[item]++;
 					break;
+
+                case 3:
+                    player.invunerable = 1;
+                    player.invunerable_timestamp = new Date().getTime();
+                    break;
 
 				case 4: 	//more bomb
 					player.bombLeft++;
@@ -251,8 +265,9 @@ function Session(sid) {
 	 */
 	var gameLoop = function () {
 		if (!gameEnd) {
-            var deadCount = 0;
+            var aliveCount = 0;
             var sendUpdate = false;
+            var winner;
 
 			var states = {};
             states["type"] = "update";
@@ -287,6 +302,8 @@ function Session(sid) {
                     sendUpdate = true;
 
                 states.players[players[i].id] = {
+                    name: players[i].name,
+                    kill: players[i].kill,
                 	x: players[i].x,
                 	y: players[i].y,
                     items: players[i].items,
@@ -295,9 +312,10 @@ function Session(sid) {
                 	isAlive: players[i].isAlive
                 };
 
-	            if(!players[i].isAlive)
-		            deadCount++;
-	            
+	            if(players[i].isAlive)
+		            aliveCount++;
+                else
+                    winner = players[i].id;
             }
 
 			// put the map inside the message
@@ -317,8 +335,16 @@ function Session(sid) {
 	            testcast(states);
             }
 
-            if (deadCount >= 3)
+            if (aliveCount == 0) {
                 gameEnd = true;
+
+                broadcast({
+                    type: "gameEnd",
+                    content: {
+                        winner: winner
+                    }
+                });
+            }
 		} else {
 			reset();
 		}
