@@ -8,24 +8,26 @@ function Session(sid) {
 
 	var that = this;
 	var players = [];  // player list
-    var bombs = []; // list of bomb on the map
+	var bombs = []; // list of bomb on the map
 
 	var gameInterval;       // Interval used for gameLoop
 	var zooMap;             // the map object
 	var gameEnd = true;
 	var counter_debug = 0;
 
-    var startPoint = [{ x: 0,               y: 0 },
-                      { x: Zoo.ZOO_WIDTH-1, y: 0 },
-                      { x: 0,               y: Zoo.ZOO_HEIGHT-1 },
-                      { x: Zoo.ZOO_WIDTH-1, y: Zoo.ZOO_HEIGHT-1 }];
-	
-	 // var startPoint = [{ x: 0, y: 0 },
-	 // 		  { x: 1, y: 0 },
-	 // 		  { x: 0, y: 2 },
-	 // 		  { x: 2, y: 2 }];
-    var serverTime;
-    var serverDelay;
+	var startPoint = [
+		{ x: 0, y: 0 },
+		{ x: Zoo.ZOO_WIDTH - 1, y: 0 },
+		{ x: 0, y: Zoo.ZOO_HEIGHT - 1 },
+		{ x: Zoo.ZOO_WIDTH - 1, y: Zoo.ZOO_HEIGHT - 1 }
+	];
+
+	// var startPoint = [{ x: 0, y: 0 },
+	// 		  { x: 1, y: 0 },
+	// 		  { x: 0, y: 2 },
+	// 		  { x: 2, y: 2 }];
+	var serverTime;
+	var serverDelay;
 
 	/*
 	 * broadcast takes in a JSON structure and send it to
@@ -33,11 +35,12 @@ function Session(sid) {
 	 *
 	 * e.g., broadcast({type: "abc", x: 30});
 	 */
-	var broadcast = function (msg) {
+	var broadcast = function (msg, serverDelay) {
 		var timestamp = new Date().getTime();
-		var serverDelay = getServerDelay();
+		serverDelay = (serverDelay === undefined) ? 0 : serverDelay;
 		msg.serverDelay = serverDelay;
 		msg.timestamp = timestamp + serverDelay;
+		console.log(msg.timestamp);
 
 		for (var i = 0; i < players.length; i++) {
 			players[i].socket.write(JSON.stringify(msg));
@@ -50,14 +53,14 @@ function Session(sid) {
 	 *
 	 * e.g., broadcast({type: "abc", x: 30});
 	 */
-	var testcast = function (msg) {
+	var testcast = function (msg, serverDelay) {
 		var timestamp = new Date().getTime();
-		var serverDelay = getServerDelay();
+		serverDelay = (serverDelay === undefined) ? 0 : serverDelay;
 		msg.serverDelay = serverDelay;
 		msg.timestamp = timestamp + serverDelay;
 
 		for (var i = 0; i < players.length; i++) {
-			if(players[i].type === "test"){
+			if (players[i].type === "test") {
 				players[i].socket.write(JSON.stringify(msg));
 			}
 		}
@@ -69,18 +72,18 @@ function Session(sid) {
 	 *
 	 * e.g., unicast(socket, {type: "abc", x: 30});
 	 */
-	var unicast = function (player, msg) {
-        var timestamp = new Date().getTime();
-        var serverDelay = getServerDelay();
-        msg.serverDelay = serverDelay;
-        msg.timestamp = timestamp + serverDelay;
-        
+	var unicast = function (player, serverDelay) {
+		var timestamp = new Date().getTime();
+		serverDelay = (serverDelay === undefined) ? 0 : serverDelay;
+		msg.serverDelay = serverDelay;
+		msg.timestamp = timestamp + serverDelay;
+
 		player.socket.write(JSON.stringify(msg));
 	};
 
 	var plantBomb = function (player, x, y) {
-        if (!player.bombLeft)
-            return;
+		if (!player.bombLeft)
+			return;
 
 		var newBomb = new Bomb(player.avatarId, player.id, x, y, player.bombRange);
 		bombs.push(newBomb);
@@ -91,7 +94,7 @@ function Session(sid) {
 	};
 
 	var bombExplode = function (bomb, bombIdx, states) {
-		if(states!==undefined){
+		if (states !== undefined) {
 			states.bombs.exploded.push({x: bombs[bombIdx].x, y: bombs[bombIdx].y, playerId: bombs[bombIdx].playerId});
 		}
 		// Update the cell that has the bomb that the bomb exploded
@@ -103,8 +106,6 @@ function Session(sid) {
 			if (bombs[i] !== undefined && players[i].id == bombs[bombIdx].playerId)
 				players[i].bombLeft++;
 		}
-
-        var bomb_playerId = bomb.playerId;
 
 		//console.log("\n" + JSON.stringify(zooMap.cells, null, 2));
 		//console.log("\n" + JSON.stringify(bomb, null, 2));
@@ -118,34 +119,34 @@ function Session(sid) {
 
 		for (var i = 1; i <= bomb.range; i++) {
 			// if bomb explode upward
-			if (up && bomb.y+i < Zoo.ZOO_HEIGHT && zooMap.cells[bomb.x][bomb.y+i].type != 2) {
-				zooMap.cells[bomb.x][bomb.y+i].type = 0;
-				explodeOtherBomb(bomb.x, bomb.y+i, states);
-				killPlayer(bomb.x, bomb.y+i, bomb_playerId);
+			if (up && bomb.y + i < Zoo.ZOO_HEIGHT && zooMap.cells[bomb.x][bomb.y + i].type != 2) {
+				zooMap.cells[bomb.x][bomb.y + i].type = 0;
+				explodeOtherBomb(bomb.x, bomb.y + i, states);
+				killPlayer(bomb.x, bomb.y + i);
 			} else {
 				up = false;
 			}
 
-			if (down && bomb.y-i > 0 && zooMap.cells[bomb.x][bomb.y-i].type != 2) {
-				zooMap.cells[bomb.x][bomb.y-i].type = 0;
-				explodeOtherBomb(bomb.x, bomb.y-i, states);
-				killPlayer(bomb.x, bomb.y-i, bomb_playerId);
+			if (down && bomb.y - i > 0 && zooMap.cells[bomb.x][bomb.y - i].type != 2) {
+				zooMap.cells[bomb.x][bomb.y - i].type = 0;
+				explodeOtherBomb(bomb.x, bomb.y - i, states);
+				killPlayer(bomb.x, bomb.y - i);
 			} else {
 				down = false;
 			}
 
-			if (left && bomb.x-i > 0 && zooMap.cells[bomb.x-i][bomb.y].type != 2) {
-				zooMap.cells[bomb.x-i][bomb.y].type = 0;
-				explodeOtherBomb(bomb.x-i, bomb.y, states);
-				killPlayer(bomb.x-i, bomb.y, bomb_playerId);
+			if (left && bomb.x - i > 0 && zooMap.cells[bomb.x - i][bomb.y].type != 2) {
+				zooMap.cells[bomb.x - i][bomb.y].type = 0;
+				explodeOtherBomb(bomb.x - i, bomb.y, states);
+				killPlayer(bomb.x - i, bomb.y);
 			} else {
 				left = false;
 			}
 
-			if (right && bomb.x+i < Zoo.ZOO_WIDTH && zooMap.cells[bomb.x+i][bomb.y].type != 2) {
-				zooMap.cells[bomb.x+i][bomb.y].type = 0;
-				explodeOtherBomb(bomb.x+i, bomb.y, states);
-				killPlayer(bomb.x+i, bomb.y, bomb_playerId);
+			if (right && bomb.x + i < Zoo.ZOO_WIDTH && zooMap.cells[bomb.x + i][bomb.y].type != 2) {
+				zooMap.cells[bomb.x + i][bomb.y].type = 0;
+				explodeOtherBomb(bomb.x + i, bomb.y, states);
+				killPlayer(bomb.x + i, bomb.y);
 			} else {
 				right = false;
 			}
@@ -158,61 +159,50 @@ function Session(sid) {
 			return;
 
 		for (var i = 0; i < bombs.length; i++) {
-			if (bombs[i]!==undefined && bombs[i].x == x && bombs[i].y == y)
+			if (bombs[i] !== undefined && bombs[i].x == x && bombs[i].y == y)
 				bombExplode(bombs[i], i, states);
 		}
 	};
 
 	// Kill any the player if he/she at the position x, y
-	var killPlayer = function (x, y, bomb_playerId) {
+	var killPlayer = function (x, y) {
 		for (var i = 0; i < players.length; i++) {
-			if (players[i].isAlive && (players[i].x > x-0.5 && players[i].x < x+0.5) && (players[i].y > y-0.5 && players[i].y < y+0.5)){
-				console.log("player "+players[i].id+" is killed!");
+			if (players[i].isAlive && (players[i].x > x - 0.5 && players[i].x < x + 0.5) && (players[i].y > y - 0.5 && players[i].y < y + 0.5)) {
+				console.log("player " + players[i].id + " is killed!");
 				players[i].isAlive = false;
-
-                // Increase the kill of the other player
-                for (var j = 0; j < players.length; j++) {
-                    if (players[j].id == bomb_playerId) {
-                        players[i].kill++;
-                    }
-                }
 			}
 		}
 	};
 
 	// Check if the player get item the the new position
 	var getItem = function (player, x, y) {
+		//console.log("x: " + x + " y: " + y);
 		if (zooMap.cells[x][y].item != 0) {
 			var item = zooMap.cells[x][y].item;
 			player.items[item]++;
 			zooMap.cells[x][y].item = 0;
 
-			switch(item) {
+			switch (item) {
 				case 1:     //increase bomb range
-					player.bombRange+=3;
-                    player.items[item]++;
+					player.bombRange += 3;
+					player.items[item]++;
 					break;
 
 				case 2: 	//haste
-					player.speed+= 5;
-                    player.items[item]++;
+					player.speed += 5;
+					player.items[item]++;
 					break;
-
-                case 3:
-                    player.invunerable = 1;
-                    player.invunerable_timestamp = new Date().getTime();
-                    break;
 
 				case 4: 	//more bomb
 					player.bombLeft++;
-                    player.items[item]++;
+					player.items[item]++;
 					break;
 			}
 
-            if (item)
-                return true;
-            else
-                return false;
+			if (item)
+				return true; else
+				return false;
+
 		}
 	};
 
@@ -231,7 +221,8 @@ function Session(sid) {
 			if (players[i].delay > serverDelay)
 				serverDelay = players[i].delay;
 		}
-		return serverDelay;
+		console.log(serverDelay);
+		return Math.ceil(serverDelay);
 	};
 
 	/*
@@ -247,11 +238,11 @@ function Session(sid) {
 			clearInterval(gameInterval);
 			gameInterval = undefined;
 			gameEnd = true;
-            // remove all player
-            for(var i =0; i < players.plength; i++){
-                players[i] = null;
-            }
-            players = [];
+			// remove all player
+			for (var i = 0; i < players.plength; i++) {
+				players[i] = null;
+			}
+			players = [];
 		}
 		console.log("Session " + that.sid + " has just ended!");
 	};
@@ -265,86 +256,74 @@ function Session(sid) {
 	 */
 	var gameLoop = function () {
 		if (!gameEnd) {
-            var aliveCount = 0;
-            var sendUpdate = false;
-            var winner;
+			var deadCount = 0;
+			var sendUpdate = false;
 
 			var states = {};
-            states["type"] = "update";
+			states["type"] = "update";
 
-            // update the bombs on the map
-            states.bombs = {};
-            // check if any bomb explode
-            states.bombs.exploded = [];
-            states.bombs.active = [];
-            for (var i = 0; i < bombs.length; i++) {
-                if (bombs[i] !== undefined && bombs[i].isExploded()) {
-                    //console.log(bombs[i]);
+			// update the bombs on the map
+			states.bombs = {};
+			// check if any bomb explode
+			states.bombs.exploded = [];
+			states.bombs.active = [];
+			for (var i = 0; i < bombs.length; i++) {
+				if (bombs[i] !== undefined && bombs[i].isExploded()) {
+					//console.log(bombs[i]);
 
 
-                    bombExplode(bombs[i], i, states);
+					bombExplode(bombs[i], i, states);
 
-                    sendUpdate = true;
-                    // remove the bomb from the array
-                    //bombs.splice(i, 1);
-                    //console.log(bombs[i]);
-                } else if (bombs[i] !== undefined) {
-                    states.bombs.active.push({x: bombs[i].x, y: bombs[i].y});
-                }
-            }
+					sendUpdate = true;
+					// remove the bomb from the array
+					//bombs.splice(i, 1);
+					//console.log(bombs[i]);
+				} else if (bombs[i] !== undefined) {
+					states.bombs.active.push({x: bombs[i].x, y: bombs[i].y});
+				}
+			}
 
-            // put players position inside the message
-            states.players = {};
-            for (var i = 0; i < players.length; i++) {
-                players[i].moveOneStep();
+			// put players position inside the message
+			states.players = {};
+			for (var i = 0; i < players.length; i++) {
+				players[i].moveOneStep();
 
-                if (getItem(players[i], Math.round(players[i].x), Math.round(players[i].y)))
-                    sendUpdate = true;
+				if (getItem(players[i], Math.round(players[i].x), Math.round(players[i].y)))
+					sendUpdate = true;
 
-                states.players[players[i].id] = {
-                    name: players[i].name,
-                    kill: players[i].kill,
-                	x: players[i].x,
-                	y: players[i].y,
-                    items: players[i].items,
-                	bombLeft: players[i].bombLeft,
-                    speed: players[i].speed,
-                	isAlive: players[i].isAlive
-                };
+				states.players[players[i].id] = {
+					x       : players[i].x,
+					y       : players[i].y,
+					items   : players[i].items,
+					bombLeft: players[i].bombLeft,
+					speed   : players[i].speed,
+					isAlive : players[i].isAlive
+				};
 
-	            if(players[i].isAlive)
-		            aliveCount++;
-                else
-                    winner = players[i].id;
-            }
+				if (!players[i].isAlive)
+					deadCount++;
+
+			}
 
 			// put the map inside the message
 			states.zooMap = {};
 			var count = 0;
 			for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
-			     for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
-			         states.zooMap[count] = { tile_type: zooMap.cells[x][y].type,
-			             item: zooMap.cells[x][y].item, x: x, y: y};
-			         count ++;
-			     }
+				for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
+					states.zooMap[count] = { tile_type: zooMap.cells[x][y].type,
+						item                          : zooMap.cells[x][y].item, x: x, y: y};
+					count++;
+				}
 			}
 
-			if (sendUpdate){
-	            broadcast(states);
-            } else{
-	            testcast(states);
-            }
+			if (sendUpdate) {
+				broadcast(states);
+			} else {
+				testcast(states);
+			}
 
-            if (aliveCount == 0) {
-                gameEnd = true;
-
-                broadcast({
-                    type: "gameEnd",
-                    content: {
-                        winner: winner
-                    }
-                });
-            }
+			if (deadCount >= 3)
+				gameEnd = true;
 		} else {
 			reset();
 		}
@@ -360,94 +339,102 @@ function Session(sid) {
 			// There is already a timer running so the game has already started.
 			console.log("Session " + that.sid + " is already playing!");
 		} else {
-            // Initialize map
+			// Initialize map
 			zooMap = new ZooMap();
 
+			// Initialize player position
+			for (var i = 0; i < players.length; i++) {
+				players[i].x = startPoint[i].x;
+				players[i].y = startPoint[i].y;
+				players[i].spawnX = players[i].x;
+				players[i].spawnY = players[i].y;
+			}
 
-            // Initialize player position
-            for (var i = 0; i < players.length; i++) {
-                players[i].x = startPoint[i].x;
-                players[i].y = startPoint[i].y;
-                players[i].spawnX = players[i].x;
-                players[i].spawnY = players[i].y;
-            }
-
-            // Get ZooMap
-            var zooState = {};
-            var count = 0;
-            for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
-                for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
-                    zooState[count] = { tile_type: zooMap.cells[x][y].type,
-                        item: zooMap.cells[x][y].item, x: x, y: y};
-                    count ++;
-
-                    //console.log(x + " - " + y + " - " + zooMap.cells[x][y].item);
-                }
-            }
+			// Get ZooMap
+			var zooState = {};
+			var count = 0;
+			for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
+				for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
+					zooState[count] = {
+						tile_type: zooMap.cells[x][y].type,
+						item     : zooMap.cells[x][y].item,
+						x        : x,
+						y        : y
+					};
+					count++;
+				}
+			}
 
 			serverTime = new Date().getTime();
 
-            console.log("Session state:\n" + JSON.stringify(that.getState(), null, 2))
-            broadcast({type:"start", content: that.getState().players, startTime: serverTime, zooMap: zooState});
+			console.log("Session state:\n" + JSON.stringify(that.getState(), null, 2))
+			broadcast({type: "start", content: that.getState().players, startTime: serverTime, zooMap: zooState});
 
 
-            gameEnd = false;
-            console.log("Session " + that.sid + " start playing!");
-            gameInterval = setInterval(gameLoop, 1000 / Zoo.FRAME_RATE);
+			gameEnd = false;
+			console.log("Session " + that.sid + " start playing!");
+			gameInterval = setInterval(gameLoop, 1000 / Zoo.FRAME_RATE);
 		}
 	};
 
 	//  executing the incoming message
 	this.digest = function (player, msg) {
-	    //console.log("SESSION   Recieve:\n" + JSON.stringify(msg, null, 2));
+		//console.log("SESSION   Recieve:\n" + JSON.stringify(msg, null, 2));
 		switch (msg.type) {
 			case "playerReady":
 				var selectedAvatar = selectAvatar(player, msg.avatarId);
-                if(selectedAvatar){
-                    broadcast({type:"readyReply", status: 0, content: {id: player.id, avatarId:  msg.avatarId, name: player.name}});
-                }else{
-                    unicast(player, {type:"readyReply", status: 1});
-                }
-                if (selectedAvatar){
-                    broadcast({type:"selectedAvatar", content: player.avatarId});
+				if (selectedAvatar) {
+					broadcast({type: "readyReply", status: 0, content: {id: player.id, avatarId: msg.avatarId, name: player.name}});
+				} else {
+					unicast(player, {type: "readyReply", status: 1});
+				}
+				if (selectedAvatar) {
+					broadcast({type: "selectedAvatar", content: player.avatarId});
 
-                    console.log("[Session " + that.sid + "]: Player "+player.id+" ready!");
-                }
+					console.log("[Session " + that.sid + "]: Player " + player.id + " ready!");
+				}
 				break;
 
 			case "start":
 				//unicast(player, {type:"message", content:"user call start"});
-                //console.log(players[0]);
-                startGame();
+				//console.log(players[0]);
+				startGame();
 				break;
 
 			case "move":
+				var sdelay = getServerDelay();
 				broadcast({
-                    type:       "move",
-                    playerId:   player.id,
-                    cellX:      msg.cellX,
-                    cellY:      msg.cellY,
-                    direction:  msg.direction,
-                    speed:      player.speed
-                });
-                // wait for delay
-                setTimeout(function(){
-                    player.isMoving = true;
-                    player.direction = msg.direction;
-                }, getServerDelay());
+					type     : "move",
+					playerId : player.id,
+					cellX    : msg.cellX,
+					cellY    : msg.cellY,
+					direction: msg.direction,
+					speed    : player.speed
+				}, sdelay);
+				// wait for delay
+				setTimeout(function () {
+                    var timestamp = new Date().getTime();
+                    var gameclock = timestamp - serverTime;
+                    console.log("time: " + gameclock);
+                    player.x = msg.cellX;
+                    player.y = msg.cellY;
+					player.isMoving = true;
+					player.direction = msg.direction;
+				}, sdelay);
 				break;
 
 			case "plantBomb":
-                broadcast({
-                    type: "plantBombReply",
-                    playerId: player.id,
-                    bombX: msg.x,
-                    bombY: msg.y
-                });
+				var sdelay = getServerDelay();
+				broadcast({
+					type    : "plantBombReply",
+					playerId: player.id,
+					bombX   : msg.x,
+					bombY   : msg.y
+				}, sdelay);
 
-                setTimeout(function(){
-                    plantBomb(player, Math.round(msg.x), Math.round(msg.y));
-                }, getServerDelay());
+				setTimeout(function () {
+					plantBomb(player, Math.round(msg.x), Math.round(msg.y));
+				}, sdelay);
 				break;
 
 			default:
@@ -462,7 +449,7 @@ function Session(sid) {
 	this.addPlayer = function (newPlayer) {
 		newPlayer.sessionId = this.sid;
 		players.push(newPlayer);
-        console.log("[Session " + that.sid + "]: Add new player "+newPlayer.id+"!");
+		console.log("[Session " + that.sid + "]: Add new player " + newPlayer.id + "!");
 	};
 
 	// return current states

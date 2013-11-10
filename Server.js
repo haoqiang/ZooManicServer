@@ -62,19 +62,21 @@ function Server() {
 	//      and most importantly check if user is
 	//      still connected
 	//
-	var pingInterval = 50000;
+	var pingInterval = 50;
 	var updateDelay = function (playerId) {
 		if (playerId === undefined) {
 			for (var key in players) {
 				if (players.hasOwnProperty(key)) {
-					if (new Date().getTime() - players[key].lastPing > pingInterval * 10) {
+					if (new Date().getTime() - players[key].lastPing > pingInterval * 100) {
 						delete players[key];
 						console.log("Player " + key + " removed due to no responding in " + (pingInterval * 15)/1000 + "s.");
 					}
 				}
 			}
+			//console.log("test: " + new Date().getTime());
 			broadcast({type: "ping", timestamp: new Date().getTime()});
 		} else {
+			//console.log("test: " + new Date().getTime());
 			unicast(players[playerId].socket, {type: "ping", timestamp: new Date().getTime()});
 		}
 	};
@@ -123,6 +125,7 @@ function Server() {
 
 						//	return player id
 						unicast(conn, {type: "newPlayerReply", status: 0, playerId: playerId});
+						setTimeout(updateDelay, 100, playerId);
 
 						//	update total player count
 						playerCount++;
@@ -182,8 +185,9 @@ function Server() {
 							case "ping":
 								// Delay is half RTT, not used in latest part
 								var currentTime = new Date().getTime();
-								//players[playerId].delay = (currentTime - message.timestamp) / 2;
+								players[playerId].delay = Math.round((currentTime - message.timestamp) / 2)+1;
 								players[playerId].lastPing = currentTime;
+								console.log(players[playerId].delay );
 								break;
 							default:
 								//
@@ -191,9 +195,9 @@ function Server() {
 								//    to that session to handle
 								//
 								if (players[playerId].sessionId !== undefined) {
-									if(message.delay !== undefined && message.delay > 0){
-										players[playerId].delay = message.delay;
-									}
+									// if(message.delay !== undefined && message.delay > 0){
+									// 	players[playerId].delay = message.delay;
+									// }
 									sessions[players[playerId].sessionId].digest(players[playerId], message);
 								} else {
 									console.log("Unhandled message." + message.type);
