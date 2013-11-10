@@ -17,6 +17,7 @@ function TestClient(id, shouldPrint) {
 	this.gameClock = 0;
 	this.subjectId = id;
 	this.playerList = {};
+	this.readyForAction = true;
 	this.shouldPrint = shouldPrint;
 
 	this.sendToServer = function (msg) {
@@ -86,14 +87,17 @@ function TestClient(id, shouldPrint) {
 								if (key + "" === playerId + "") {
 									that.x = players[key].x;
 									that.y = players[key].y;
+									if((that.x+"").match(/^\d+$/)&&(that.y+"").match(/^\d+$/)){
+										that.readyForAction = true;
+									}
 									if (!players[key].isAlive) {
-										$("#output").prepend("<hr><h3>Player "+playerId+" is killed!</h3>");
+										$("#output").prepend("<hr><h3>Player " + playerId + " is killed!</h3>");
 										socket.close();
 									}
 								}
 								that.gameClock = message.timestamp - that.serverTime;
 								var delay = ((message.timestamp - that.serverTime) - (new Date().getTime() - that.localTime)) - message.serverDelay;
-								if(delay > 0){
+								if (delay > 0) {
 									that.delay = delay;
 								}
 //								if (that.shouldPrint) {
@@ -114,11 +118,6 @@ function TestClient(id, shouldPrint) {
 		}
 	}
 
-	this.disconnectNetwork = function () {
-		// Attempts to connect to game server
-		socket.close();
-	}
-
 	this.refresh = function () {
 		$("#playerInfo").find(".player").each(function () {
 			var sid = $(this).attr("playerId");
@@ -130,7 +129,6 @@ function TestClient(id, shouldPrint) {
 	}
 
 	this.start = function () {
-
 		// Initialize network and GUI
 		this.initNetwork();
 		var delay = 3000;
@@ -169,8 +167,8 @@ var testSubject = [];
 var testSubjectSize = 4;
 
 for (var i = 0; i < testSubjectSize; i++) {
-	if(i===0){
-		testSubject.push(new TestClient(i, true));
+	if (i === 0) {
+		testSubject.push(new TestClient(i, false));
 	} else {
 		testSubject.push(new TestClient(i, false));
 	}
@@ -178,7 +176,6 @@ for (var i = 0; i < testSubjectSize; i++) {
 }
 
 $(document).ready(function () {
-
 	$(".getAllPlayer").on("click", function () {
 		testSubject[0].sendToServer({type: "getAllPlayerStats"});
 	});
@@ -296,29 +293,40 @@ function automatedTestFor(subjectId, initialDelay, moveSequence) {
 	var delay = initialDelay;
 	moveSequence = moveSequence.split(" ");
 
-	for (var i = 0; i < moveSequence.length; i++) {
-		var dir = moveSequence[i];
-		console.log(delay);
-		setTimeout(function (dir) {
-			if(dir === "BOMB"){
-				testSubject[subjectId].sendToServer({
-					type: "plantBomb",
-					x: testSubject[subjectId].x,
-					y: testSubject[subjectId].y});
-				console.log("["+subjectId+"]"+" plantBomb at " + testSubject[subjectId].gameClock);
-			} else if(dir === "UP" || dir === "DOWN" || dir === "LEFT" || dir === "RIGHT"){
-				testSubject[subjectId].sendToServer({
-					type: "move",
-					cellX: testSubject[subjectId].x,
-					cellY: testSubject[subjectId].y,
-					direction: dir});
-				console.log("["+subjectId+"]"+" move "+dir+" from ("+testSubject[subjectId].x+","+testSubject[subjectId].y+") at " + testSubject[subjectId].gameClock);
-			}
-		}, delay, dir);
-		delay += interval;
-	}
+	setTimeout(makeAction, delay, subjectId, moveSequence, 0);
 }
 
+var deafaultDelay = 100;
+function makeAction(subjectId, moveSequence, index) {
+	if (moveSequence.length > 0) {
+		var cp = testSubject[subjectId];
+		if (cp.readyForAction) {
+			var dir = moveSequence[index];
+			console.log(moveSequence[index]);
+			if (dir === "BOMB") {
+				cp.sendToServer({
+					type: "plantBomb",
+					x   : cp.x,
+					y   : cp.y
+				});
+				console.log("[" + subjectId + "]" + " plantBomb at " + cp.gameClock);
+			} else if (dir === "UP" || dir === "DOWN" || dir === "LEFT" || dir === "RIGHT") {
+				cp.sendToServer({
+					type     : "move",
+					cellX    : cp.x,
+					cellY    : cp.y,
+					direction: dir
+				});
+				cp.readyForAction = false;
+				console.log("[" + subjectId + "]" + " move " + dir + " from (" + cp.x + "," + cp.y + ") at " + cp.gameClock);
+			}
+			setTimeout(makeAction, interval, subjectId, moveSequence, index+1);
+		} else{
+			console.log("Player haven't finish last action!");
+			setTimeout(makeAction, deafaultDelay, subjectId, moveSequence, index);
+		}
+	}
+}
 
 
 
