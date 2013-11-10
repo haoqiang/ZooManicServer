@@ -497,6 +497,7 @@ function Session(sid) {
 				broadcast({
 					type    : "plantBombReply",
 					playerId: player.id,
+                    bombLeft: player.bombLeft-1,
 					bombX   : msg.x,
 					bombY   : msg.y
 				}, sdelay);
