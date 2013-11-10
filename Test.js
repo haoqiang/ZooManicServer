@@ -295,7 +295,19 @@ $(document).ready(function () {
 	});
 	$(".autoAll").on("click", function () {
 		var sid = $("#sessionId").val();
-		var delay = 0;
+		var delay = 3000;
+		if (location.host === "") {
+			delay = 1000;
+		}
+		for (var i = 0; i < 4; i++) {
+			if (i === 0) {
+				testSubject.push(new TestClient(i, true));
+			} else {
+				testSubject.push(new TestClient(i, false));
+			}
+			testSubject[i].init(50 * i + delay);
+		}
+		delay *= 2;
 		delay = delayCallback(function () {
 			for (var i = 0; i < testSubject.length; i++) {
 				testSubject[i].sendToServer({type: "setSession", sessionId: sid});
