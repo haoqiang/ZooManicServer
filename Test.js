@@ -307,6 +307,7 @@ $(document).ready(function () {
 			}
 			testSubject[i].init(50 * i + delay);
 		}
+		delay *= 2;
 		delay = delayCallback(function () {
 			for (var i = 0; i < testSubject.length; i++) {
 				testSubject[i].sendToServer({type: "setSession", sessionId: sid});
