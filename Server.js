@@ -67,9 +67,9 @@ function Server() {
 		if (playerId === undefined) {
 			for (var key in players) {
 				if (players.hasOwnProperty(key)) {
-					if (new Date().getTime() - players[key].lastPing > pingInterval * 100) {
+					if (new Date().getTime() - players[key].lastPing > pingInterval * 1000) {
 						delete players[key];
-						console.log("Player " + key + " removed due to no responding in " + (pingInterval * 15)/1000 + "s.");
+						console.log("Player " + key + " removed due to no responding in " + (pingInterval * 1000)/1000 + "s.");
 					}
 				}
 			}
