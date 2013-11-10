@@ -62,6 +62,7 @@ function Server() {
 	//      and most importantly check if user is
 	//      still connected
 	//
+	var pingNumber = 7;
 	var pingInterval = 5000;
 	var updateDelay = function (playerId) {
 		if (playerId === undefined) {
@@ -73,17 +74,23 @@ function Server() {
 					}
 				}
 			}
-			var si = new Date().getTime();
 			for (var key in players) {
-				if (players.hasOwnProperty(key)) {
-					players[key].serialNo = si;
+				players[key].serialDelay = [];
+				for(var i=0; i<pingNumber; i++){
+					if(players.hasOwnProperty(key)){
+						var si = new Date().getTime();
+						players[key].serialDelay.push(0);
+						broadcast({type: "ping", timestamp: si, serialNo: i});
+					}
 				}
 			}
-			broadcast({type: "ping", timestamp: si});
 		} else {
-			var si = new Date().getTime();
-			players[playerId].serialNo = si;
-			unicast(players[playerId].socket, {type: "ping", timestamp: si});
+			players[key].serialDelay = [];
+			for(var i=0; i<pingNumber; i++){
+				var si = new Date().getTime();
+				players[key].serialNo.push(si);
+				unicast(players[playerId].socket, {type: "ping", timestamp: si, serialNo: i});
+			}
 		}
 	};
 
@@ -196,14 +203,22 @@ function Server() {
 							case "ping":
 								// Delay is half RTT, not used in latest part
 								var time = message.timestamp;
-								if(time === players[playerId].serialNo){
 									var currentTime = new Date().getTime();
-									players[playerId].delay = Math.round((currentTime - time) / 2)+1;
+									players[playerId].serialDelay[message.serialNo] = (currentTime - time) / 2;
 									players[playerId].lastPing = currentTime;
-									console.log("Delay: " + players[playerId].delay);
-								} else {
-									console.log("Serial number is not correct");
-								}
+
+									if(message.serialNo === pingNumber - 1){
+										var temp = 0;
+										for(var i=0; i<pingNumber; i++){
+											temp += players[playerId].serialDelay[i];
+											if(players[playerId].serialDelay[i]===0){
+												console.log("Packet lost!");
+											}
+										}
+										//console.log("Delay*7: " + temp);
+										players[playerId].delay =  Math.round(temp/pingNumber)+1;
+										console.log("Delay: " + players[playerId].delay);
+									}
 								break; 
 							default:
 								//
