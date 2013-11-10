@@ -118,6 +118,8 @@ function Session(sid) {
 
 		var up = true, down = true, left = true, right = true;
 
+        killPlayer(bomb.x, bomb.y, bomb_playerId);
+
 		for (var i = 1; i <= bomb.range; i++) {
 			// if bomb explode upward
 			if (up && bomb.y + i < Zoo.ZOO_HEIGHT && zooMap.cells[bomb.x][bomb.y + i].type != 2) {
@@ -348,7 +350,7 @@ function Session(sid) {
 				testcast(states);
 			}
 
-			if (deadCount >= players.length - 1 && players.length > 1) {
+			if (aliveCount <= 1 && players.length > 1) {
 				gameEnd = true;
                 broadcast({
                     type: "gameEnd",
