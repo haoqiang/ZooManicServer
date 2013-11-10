@@ -62,7 +62,7 @@ function Server() {
 	//      and most importantly check if user is
 	//      still connected
 	//
-	var pingInterval = 50000;
+	var pingInterval = 5000;
 	var updateDelay = function (playerId) {
 		if (playerId === undefined) {
 			for (var key in players) {
@@ -73,9 +73,17 @@ function Server() {
 					}
 				}
 			}
-			broadcast({type: "ping", timestamp: new Date().getTime()});
+			var si = new Date().getTime();
+			for (var key in players) {
+				if (players.hasOwnProperty(key)) {
+					players[key].serialNo = si;
+				}
+			}
+			broadcast({type: "ping", timestamp: si});
 		} else {
-			unicast(players[playerId].socket, {type: "ping", timestamp: new Date().getTime()});
+			var si = new Date().getTime();
+			players[playerId].serialNo = si;
+			unicast(players[playerId].socket, {type: "ping", timestamp: si});
 		}
 	};
 
@@ -182,10 +190,15 @@ function Server() {
 								break;
 							case "ping":
 								// Delay is half RTT, not used in latest part
-								var currentTime = new Date().getTime();
-								players[playerId].delay = Math.round((currentTime - message.timestamp) / 2)+1;
-								players[playerId].lastPing = currentTime;
-								console.log(players[playerId].delay );
+								var time = message.timestamp;
+								if(time === players[playerId].serialNo){
+									var currentTime = new Date().getTime();
+									players[playerId].delay = Math.round((currentTime - time) / 2)+1;
+									players[playerId].lastPing = currentTime;
+									//console.log("Delay: " + players[playerId].delay);
+								} else {
+									console.log("Serial number is not correct");
+								}
 								break;
 							default:
 								//
