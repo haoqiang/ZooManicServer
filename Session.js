@@ -196,12 +196,12 @@ function Session(sid) {
 
 			switch (item) {
 				case 1:     //increase bomb range
-					player.bombRange += 3;
+					player.bombRange += player.bombRange;
 					player.items[item]++;
 					break;
 
 				case 2: 	//haste
-					player.speed += 5;
+					player.speed += player.speed;
 					player.items[item]++;
 					break;
 
@@ -212,7 +212,7 @@ function Session(sid) {
                     break;
 
 				case 4: 	//more bomb
-					player.bombLeft++;
+					player.bombLeft += player.bombLeft;
 					player.items[item]++;
 					break;
 
