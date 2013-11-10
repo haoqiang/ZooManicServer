@@ -61,6 +61,7 @@ function Player(id, name, socket, type) {
 		var now = new Date().getTime();
 		if (now - this.invunerable_timestamp >= 5000) {
 			this.invunerable = 0;
+			this.items[3] = 0
 			return false; 
 		}
 		else 
@@ -75,6 +76,7 @@ function Player(id, name, socket, type) {
 		if (now - this.haste_timestamp >= 10000) {
 			this.haste = 0;
 			this.speed = 30;
+			this.items[2] = 0;
 			return false; 
 		}
 		else 
@@ -89,6 +91,7 @@ function Player(id, name, socket, type) {
 		if (now - this.moreBomb_timestamp >= 10000) {
 			this.moreBomb = 0;
 			this.bombLeft -= 3;
+			this.items[4] = 0;
 			return false; 
 		}
 		else 
@@ -103,6 +106,7 @@ function Player(id, name, socket, type) {
 		if (now - this.moreRange_timestamp >= 10000) {
 			this.moreRange = 0;
 			this.bombRange = 3;
+			this.items[1] = 0;
 			return false; 
 		}
 		else 
@@ -116,6 +120,7 @@ function Player(id, name, socket, type) {
 		var now = new Date().getTime();
 		if (now - this.shakable_timestamp >= 10000) {
 			this.shakable = 0;
+			this.items[5] = 0;
 			return false; 
 		}
 		else 

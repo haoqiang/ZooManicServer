@@ -17,7 +17,7 @@ function Bomb(type, playerId, xPos, yPos, range) {
 	this.x = xPos;
 	this.y = yPos;
 	this.playerId = playerId;
-	this.range = range || 3;
+	this.range = range;
 	this.isShakable = false;
 	this.timer = new Date().getTime();
 
