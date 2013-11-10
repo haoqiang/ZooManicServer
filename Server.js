@@ -195,7 +195,7 @@ function Server() {
 									var currentTime = new Date().getTime();
 									players[playerId].delay = Math.round((currentTime - time) / 2)+1;
 									players[playerId].lastPing = currentTime;
-									//console.log("Delay: " + players[playerId].delay);
+									console.log("Delay: " + players[playerId].delay);
 								} else {
 									console.log("Serial number is not correct");
 								}
