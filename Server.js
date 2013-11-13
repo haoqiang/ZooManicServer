@@ -220,6 +220,10 @@ function Server() {
 										console.log("Delay: " + players[playerId].delay);
 									}
 								break; 
+
+							case "chatMessage":
+								broadcast(message);
+								break;
 							default:
 								//
 								// if user belongs to a session, pass the message
