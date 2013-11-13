@@ -180,7 +180,21 @@ function Session(sid) {
                 && (players[i].y > y - 0.5 && players[i].y < y + 0.5)
                 && !players[i].checkInvunerable()) {
 				console.log("player " + players[i].id + " is killed!");
-				players[i].isAlive = false;
+				players[i].lives--;
+				players[i].x = players[i].spawnX;
+				players[i].y = players[i].spawnY;
+				
+				if(!players[i].lives)
+					players[i].isAlive = false;
+
+				broadcast({
+					type 		: "respawn",
+					playerId 	: players[i].id,
+					cellX 		: players[i].spawnX,
+					cellY 		: players[i].spawnY,
+					lives 		: players[i].lives,
+					isAlive 	: players[i].isAlive
+				});
 
                 var dead_player = players[i].name;
                 var scored_player;
@@ -351,13 +365,15 @@ function Session(sid) {
 					items   : players[i].items,
 					bombLeft: players[i].bombLeft,
 					speed   : players[i].speed,
+					lives	: players[i].lives,
 					isAlive : players[i].isAlive
 				};
 
-				if (players[i].isAlive)
+				if (players[i].isAlive) {
 					aliveCount++;
-                winnerId = players[i].id;
-                winnerName = players[i].name;
+					winnerId = players[i].id;
+                	winnerName = players[i].name;
+				}
 			}
 
 			// put the map inside the message

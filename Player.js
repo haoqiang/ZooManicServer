@@ -27,6 +27,8 @@ function Player(id, name, socket, type) {
 	this.spawnX;
 	this.spawnY;
 
+	this.lives = 3;
+
 	this.isMoving = false;
 	this.direction;
 
