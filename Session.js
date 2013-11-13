@@ -407,10 +407,8 @@ function Session(sid) {
 				gameEnd = true;
                 broadcast({
                     type: "gameEnd",
-                    content: {
-                        winnerName: winnerName, 
-                        winnerId: winnerId
-                    }
+                    winnerName: winnerName, 
+                    winnerId: winnerId
                 });
             }
             
