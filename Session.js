@@ -212,7 +212,7 @@ function Session(sid) {
 
 	// Check if the player get item the the new position
 	var getItem = function (player, x, y) {
-		//console.log("x: " + x + " y: " + y);
+		console.log("x: " + x + " y: " + y); 
 		if (zooMap.cells[x][y].item != 0) {
 			var item = zooMap.cells[x][y].item;
 			player.items[item]++;
@@ -491,6 +491,7 @@ function Session(sid) {
 
 			case "move":
 				var sdelay = getServerDelay();
+				
 				broadcast({
 					type     : "move",
 					playerId : player.id,

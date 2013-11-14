@@ -166,6 +166,9 @@ function Player(id, name, socket, type) {
 
 		switch (this.direction) {
 			case "UP":
+				if(this.y + this.cellSpeed>Zoo.ZOO_HEIGHT){
+					this.isMoving = false;
+				}
 				this.y += this.cellSpeed;
 				if (this.y >= Math.floor(oldPosY + 1)) {		// moved to the next cell
 					this.isMoving = false;
@@ -174,6 +177,9 @@ function Player(id, name, socket, type) {
 				break;
 
 			case "DOWN":
+				if(this.y - this.cellSpeed<0){
+					this.isMoving = false;
+				}
 				this.y -= this.cellSpeed;
 				if (this.y <= Math.ceil(oldPosY - 1)) {	// moved to the next cell
 					this.isMoving = false;
@@ -182,6 +188,9 @@ function Player(id, name, socket, type) {
 				break;
 
 			case "LEFT":
+				if(this.x - this.cellSpeed<0){
+					this.isMoving = false;
+				}
 				this.x -= this.cellSpeed;
 				if (this.x <= Math.ceil(oldPosX - 1)) {	// moved to the next cell
 					this.isMoving = false;
@@ -190,6 +199,9 @@ function Player(id, name, socket, type) {
 				break;
 
 			case "RIGHT":
+				if(this.x + this.cellSpeed>Zoo.ZOO_WIDTH){
+					this.isMoving = false;
+				}
 				this.x += this.cellSpeed;
 				if (this.x >= Math.floor(oldPosX + 1)) {		// moved to the next cell
 					this.isMoving = false;
