@@ -159,6 +159,44 @@ function Player(id, name, socket, type) {
 		}
 	}
 
+	this.getWarpX = function () {
+		if (this.isMoving == false) {
+			this.warpX = this.x;
+			return;
+		}
+			
+		var warpDistance = this.cellSpeed / (1000 / Zoo.FRAME_RATE) * this.delay;
+		
+		switch (this.direction) {
+			case "LEFT":
+				this.warpX = this.x - warpDistance;
+				break;
+
+			case "RIGHT":
+				this.warpX = this.x + warpDistance;
+				break;
+		}
+	}
+
+	this.getWarpY = function () {
+		if (this.isMoving == false) {
+			this.warpY = this.y;
+			return;
+		}
+
+		var warpDistance = this.cellSpeed / (1000 / Zoo.FRAME_RATE) * this.delay;
+		
+		switch (this.direction) {
+			case "UP":
+				this.warpY = this.y + warpDistance;
+				break;
+
+			case "DOWN":
+				this.warpY = this.y - warpDistance;
+				break;
+		}
+	}
+
 	this.moveOneStep = function () {
 		if (this.isMoving == false)
 			return;
@@ -166,16 +204,14 @@ function Player(id, name, socket, type) {
 		var oldPosX = this.x;
 		var oldPosY = this.y;
 
-		this.cellSpeed = this.speed / Zoo.CELL_WIDTH / Zoo.FRAME_RATE;
-		var warpDistance = this.cellSpeed / (1000 / Zoo.FRAME_RATE) * this.delay;
-
+		this.cellSpeed = this.speed / Zoo.CELL_WIDTH / Zoo.FRAME_RATE;		
+		//console.log("x: " + this.x + " y: " + y);
 		switch (this.direction) {
 			case "UP":
 				if(this.y + this.cellSpeed>Zoo.ZOO_HEIGHT){
 					this.isMoving = false;
 				}
 				this.y += this.cellSpeed;
-				this.warpY = this.y + warpDistance;
 				if (this.y >= Math.floor(oldPosY + 1)) {		// moved to the next cell
 					this.isMoving = false;
 					this.y = Math.round(this.y);
@@ -187,7 +223,6 @@ function Player(id, name, socket, type) {
 					this.isMoving = false;
 				}
 				this.y -= this.cellSpeed;
-				this.warpY = this.y - warpDistance;
 				if (this.y <= Math.ceil(oldPosY - 1)) {	// moved to the next cell
 					this.isMoving = false;
 					this.y = Math.round(this.y);
@@ -199,7 +234,6 @@ function Player(id, name, socket, type) {
 					this.isMoving = false;
 				}
 				this.x -= this.cellSpeed;
-				this.warpX = this.x - warpDistance;
 				if (this.x <= Math.ceil(oldPosX - 1)) {	// moved to the next cell
 					this.isMoving = false;
 					this.x = Math.round(this.x);
@@ -211,7 +245,6 @@ function Player(id, name, socket, type) {
 					this.isMoving = false;
 				}
 				this.x += this.cellSpeed;
-				this.warpX = this.x + warpDistance;
 				if (this.x >= Math.floor(oldPosX + 1)) {		// moved to the next cell
 					this.isMoving = false;
 					this.x = Math.round(this.x);

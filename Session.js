@@ -136,7 +136,7 @@ function Session(sid) {
 				up = false;
 			}
 
-			if (down && bomb.y - i > 0 && zooMap.cells[bomb.x][bomb.y - i].type != 2) {
+			if (down && bomb.y - i >= 0 && zooMap.cells[bomb.x][bomb.y - i].type != 2) {
 				zooMap.cells[bomb.x][bomb.y - i].type = 0;
 				explodeOtherBomb(bomb.x, bomb.y - i, states);
 				killPlayer(bomb.x, bomb.y - i, bomb_playerId);
@@ -144,7 +144,7 @@ function Session(sid) {
 				down = false;
 			}
 
-			if (left && bomb.x - i > 0 && zooMap.cells[bomb.x - i][bomb.y].type != 2) {
+			if (left && bomb.x - i >= 0 && zooMap.cells[bomb.x - i][bomb.y].type != 2) {
 				zooMap.cells[bomb.x - i][bomb.y].type = 0;
 				explodeOtherBomb(bomb.x - i, bomb.y, states);
 				killPlayer(bomb.x - i, bomb.y, bomb_playerId);
@@ -176,6 +176,9 @@ function Session(sid) {
 	// Kill any the player if he/she at the position x, y
 	var killPlayer = function (x, y, bomb_playerId) {
 		for (var i = 0; i < players.length; i++) {
+			players[i].getWarpX();
+			players[i].getWarpY();
+			console.log("Warped: " + players[i].warpX + " " + players[i].warpY);
 			if (players[i].isAlive && (players[i].warpX > x - 0.5 && players[i].warpX < x + 0.5) 
                 && (players[i].warpY > y - 0.5 && players[i].warpY < y + 0.5)
                 && !players[i].checkInvunerable()) {
@@ -212,7 +215,7 @@ function Session(sid) {
 
 	// Check if the player get item the the new position
 	var getItem = function (player, x, y) {
-		console.log("x: " + x + " y: " + y); 
+		//console.log("x: " + x + " y: " + y); 
 		if (zooMap.cells[x][y].item != 0) {
 			var item = zooMap.cells[x][y].item;
 			player.items[item]++;
