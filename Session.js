@@ -295,15 +295,20 @@ function Session(sid) {
 		if (gameInterval !== undefined) {
 			clearInterval(gameInterval);
 			gameInterval = undefined;
-			gameEnd = true;
+			gameEnd = false;
 			// remove all player
-			for (var i = 0; i < players.plength; i++) {
-                players.avatarId = undefined;
-				players[i] = null;
+			for (var i = 0; i < players.length; i++) {
+                players[i].avatarId = -1;
+				//players[i] = undefined;
+				players[i].isAlive = true;
+				players[i].lives = 3;
+				players[i].bombRange = 3;
+				players[i].bombLeft = 3;
 			}
 			players = [];
 		}
         
+        var zooMap = undefined;
         var serverTime = undefined;
         var serverDelay = undefined;
 		console.log("Session " + that.sid + " has just ended!");
@@ -425,53 +430,61 @@ function Session(sid) {
 	 *
 	 * Start a new game. Initialize the map and start the game loop
 	 */
-	var startGame = function () {
-		if (gameInterval !== undefined) {
+	var startGame = function (mapId) {
+		//if (gameInterval !== undefined) {
 			// There is already a timer running so the game has already started.
-			console.log("Session " + that.sid + " is already playing!");
-		} else {
-			// Initialize map
-			zooMap = new ZooMap();
+		//	console.log("Session " + that.sid + " is already playing!");
+		//} else {
+		// Initialize map
+		zooMap = new ZooMap();
 
-			// Initialize player position
-			for (var i = 0; i < players.length; i++) {
-				players[i].x = startPoint[i].x;
-				players[i].y = startPoint[i].y;
-				players[i].spawnX = players[i].x;
-				players[i].spawnY = players[i].y;
-			}
-
-			// Get ZooMap
-			var zooState = {};
-			var count = 0;
-			for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
-				for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
-					zooState[count] = {
-						tile_type: zooMap.cells[x][y].type,
-						item     : zooMap.cells[x][y].item,
-						x        : x,
-						y        : y
-					};
-					count++;
-				}
-			}
-
-			serverTime = new Date().getTime();
-
-			console.log("Session state:\n" + JSON.stringify(that.getState(), null, 2))
-			broadcast({type: "start", content: that.getState().players, startTime: serverTime, zooMap: zooState});
-
-
-			gameEnd = false;
-			console.log("Session " + that.sid + " start playing!");
-			gameInterval = setInterval(gameLoop, 1000 / Zoo.FRAME_RATE);
+		// Initialize player position
+		for (var i = 0; i < players.length; i++) {
+			players[i].x = startPoint[i].x;
+			players[i].y = startPoint[i].y;
+			players[i].spawnX = players[i].x;
+			players[i].spawnY = players[i].y;
 		}
+
+		// Get ZooMap
+		var zooState = {};
+		var count = 0;
+		for (var x = 0; x < Zoo.ZOO_WIDTH; x++) {
+			for (var y = 0; y < Zoo.ZOO_HEIGHT; y++) {
+				zooState[count] = {
+					tile_type: zooMap.cells[x][y].type,
+					item     : zooMap.cells[x][y].item,
+					x        : x,
+					y        : y
+				};
+				count++;
+			}
+		}
+
+		serverTime = new Date().getTime();
+
+		console.log("Session state:\n" + JSON.stringify(that.getState(), null, 2))
+		broadcast({type: "start", content: that.getState().players, startTime: serverTime, zooMap: zooState, mapId: mapId});
+
+
+		gameEnd = false;
+		console.log("Session " + that.sid + " start playing!");
+		gameInterval = setInterval(gameLoop, 1000 / Zoo.FRAME_RATE);
+		//}
 	};
 
 	//  executing the incoming message
 	this.digest = function (player, msg) {
 		//console.log("SESSION   Recieve:\n" + JSON.stringify(msg, null, 2));
 		switch (msg.type) {
+			case "setMap":
+				broadcast(msg);
+				break;
+
+			case "chatMessage":
+				broadcast(message);
+				break;
+
 			case "playerReady":
 				var selectedAvatar = selectAvatar(player, msg.avatarId);
 				if (selectedAvatar) {
@@ -489,7 +502,7 @@ function Session(sid) {
 			case "start":
 				//unicast(player, {type:"message", content:"user call start"});
 				//console.log(players[0]);
-				startGame();
+				startGame(msg.mapId);
 				break;
 
 			case "move":
