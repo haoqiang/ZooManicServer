@@ -176,8 +176,8 @@ function Session(sid) {
 	// Kill any the player if he/she at the position x, y
 	var killPlayer = function (x, y, bomb_playerId) {
 		for (var i = 0; i < players.length; i++) {
-			if (players[i].isAlive && (players[i].x > x - 0.5 && players[i].x < x + 0.5) 
-                && (players[i].y > y - 0.5 && players[i].y < y + 0.5)
+			if (players[i].isAlive && (players[i].warpX > x - 0.5 && players[i].warpX < x + 0.5) 
+                && (players[i].warpY > y - 0.5 && players[i].warpY < y + 0.5)
                 && !players[i].checkInvunerable()) {
 				console.log("player " + players[i].id + " is killed!");
 				players[i].lives--;
