@@ -477,12 +477,8 @@ function Session(sid) {
 	this.digest = function (player, msg) {
 		//console.log("SESSION   Recieve:\n" + JSON.stringify(msg, null, 2));
 		switch (msg.type) {
-			case "setMap":
-				broadcast(msg);
-				break;
-
 			case "chatMessage":
-				broadcast(message);
+				broadcast(msg);
 				break;
 
 			case "playerReady":
